@@ -1,0 +1,9 @@
+FROM alpine:3.21
+
+RUN sed -i 's#https://dl-cdn.alpinelinux.org#https://mirrors.aliyun.com#g' /etc/apk/repositories \
+    && apk add --no-cache openjdk21-jre netcat-openbsd
+
+WORKDIR /app
+COPY plant.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
