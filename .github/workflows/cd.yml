@@ -1,0 +1,55 @@
+name: 部署后端
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: plant-backend-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: 构建并部署后端
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: 打包后端
+        working-directory: backend
+        run: chmod +x mvnw && ./mvnw -B -ntp -Dmaven.test.skip=true package
+
+      - name: 组装发布目录
+        run: |
+          set -euo pipefail
+          stage="$RUNNER_TEMP/plant-release"
+          mkdir -p "$stage"
+          mapfile -t jars < <(find backend/target -maxdepth 1 -type f -name 'plant-*.jar' ! -name '*.original' | sort)
+          if [[ ${#jars[@]} -ne 1 ]]; then
+            echo "需要恰好一个后端安装包，实际 ${#jars[@]}" >&2
+            printf '%s\n' "${jars[@]}" >&2
+            exit 1
+          fi
+          cp "${jars[0]}" "$stage/plant.jar"
+          cp deploy/backend/Dockerfile.runtime "$stage/Dockerfile.runtime"
+          cp deploy/backend/compose.server.yml "$stage/compose.yml"
+          cp deploy/backend/dockerignore "$stage/dockerignore"
+          echo "stage=$stage" >> "$GITHUB_ENV"
+
+      - name: 发布到服务器
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: bash .github/scripts/deploy_backend.sh 8.155.138.61 "$stage"
