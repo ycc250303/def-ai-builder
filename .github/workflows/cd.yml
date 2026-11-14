@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -109,3 +109,16 @@ jobs:
           path: app/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: 发布到 Release 列表
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          short="${GITHUB_SHA::7}"
+          gh release create "apk-${GITHUB_SHA}" \
+            "app/build/app/outputs/flutter-apk/app-release.apk#plant-${short}.apk" \
+            --target "$GITHUB_SHA" \
+            --title "Android 安装包 ${short}" \
+            --latest \
+            --notes "main 提交 ${GITHUB_SHA} 的正式 Android 安装包。后端地址为 http://8.155.138.61:8082。"
