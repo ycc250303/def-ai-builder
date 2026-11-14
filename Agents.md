@@ -118,7 +118,7 @@ Agents.md   本文件
 
 停止容器执行 `docker compose down`。数据卷会保留。删除数据卷、发布、文件清理和生产进程操作，在用户明确授权后执行。
 
-main 分支每次收到新提交，GitHub Actions 执行 `.github/workflows/cd.yml`。流水线使用 Java 21 打包后端，通过密钥 `SSH_PRIVATE_KEY` 登录 `8.155.138.61`，把安装包放到 `/opt/plant`，再按 `deploy/backend/compose.server.yml` 构建并启动容器 `plant-backend`。容器加入已有网络 `deploy_backend`，数据库地址为 `pgsql:5432`，Redis 地址为 `redis:6379`，宿主机端口是 8082。数据库密码、Redis 密码和 `JWT_SECRET` 保存在服务器文件 `/opt/plant/.env`。该文件权限为 600，不进入仓库，后续发布保留原文件。发布脚本是 `.github/scripts/deploy_backend.sh`。本机在 `deploy/` 执行 `docker compose up --build -d` 启动本机的三个服务。服务器发布连接这台服务器上已经存在的 PostgreSQL 和 Redis。
+main 分支每次收到新提交，GitHub Actions 执行 `.github/workflows/cd.yml`。流水线使用 Java 21 打包后端，通过密钥 `SSH_PRIVATE_KEY` 登录 `8.155.138.61`，把安装包放到 `/opt/plant`，再按 `deploy/backend/compose.server.yml` 构建并启动容器 `plant-backend`。同一流水线用 Flutter 3.50.0 执行 `flutter build apk --release`，后端地址为 `http://8.155.138.61:8082`，安装包关闭调试标志，产物为 Actions 工件 `app-release`，保留 30 天。容器加入已有网络 `deploy_backend`，数据库地址为 `pgsql:5432`，Redis 地址为 `redis:6379`，宿主机端口是 8082。数据库密码、Redis 密码和 `JWT_SECRET` 保存在服务器文件 `/opt/plant/.env`。该文件权限为 600，不进入仓库，后续发布保留原文件。发布脚本是 `.github/scripts/deploy_backend.sh`。本机在 `deploy/` 执行 `docker compose up --build -d` 启动本机的三个服务。服务器发布连接这台服务器上已经存在的 PostgreSQL 和 Redis。
 
 ## Git 与文档
 
