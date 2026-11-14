@@ -19,9 +19,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.def.plant.common.exception.ErrorCode;
 import com.def.plant.common.exception.ProblemResponses;
+import jakarta.servlet.DispatcherType;
 
 /**
- * 无状态登录。注册和登录匿名可访问，其余接口要求当前令牌。
+ * 无状态登录。注册、登录和按账号重置密码允许匿名访问，其余接口要求当前令牌。
  */
 @Configuration
 @EnableWebSecurity
@@ -47,7 +48,8 @@ public class SecurityConfig {
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(HttpMethod.POST, "/users", "/users/login").permitAll()
+						.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+						.requestMatchers(HttpMethod.POST, "/users", "/users/login", "/users/reset-password").permitAll()
 						.anyRequest().authenticated())
 				.exceptionHandling(exceptions -> exceptions
 						.authenticationEntryPoint((request, response, authException) -> writeUnauthenticated(response))
@@ -73,7 +75,7 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
-		configuration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

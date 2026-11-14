@@ -4,6 +4,8 @@ import 'auth/auth_api.dart';
 import 'auth/home_page.dart';
 import 'auth/login_page.dart';
 import 'auth/token_store.dart';
+import 'plants/plant_api.dart';
+import 'ai/ai_api.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +29,9 @@ class AuthSession extends ChangeNotifier {
   AuthUser? user;
 
   String? _token;
+
+  /// 当前登录令牌，用于访问受保护的业务接口。
+  String? get token => _token;
 
   /// 是否仍在恢复登录。
   var restoring = true;
@@ -80,10 +85,14 @@ class AuthSession extends ChangeNotifier {
 /// 应用入口。
 class PlantApp extends StatelessWidget {
   /// 创建应用。
-  const PlantApp({super.key, required this.session});
+  const PlantApp({super.key, required this.session, this.plantApi, this.aiApi});
 
   /// 登录状态。
   final AuthSession session;
+
+  /// 可注入的植物接口，默认携带当前登录令牌访问后端。
+  final PlantApi? plantApi;
+  final AiApi? aiApi;
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +111,18 @@ class PlantApp extends StatelessWidget {
           }
           final user = session.user;
           if (user == null) {
-            return LoginPage(submit: session.submit);
+            return LoginPage(
+              submit: session.submit,
+              resetPassword: session.api.resetPassword,
+            );
           }
-          return HomePage(username: user.username, onLogout: session.logout);
+          return HomePage(
+            key: ValueKey(user.id),
+            username: user.username,
+            onLogout: session.logout,
+            plantApi: plantApi ?? DioPlantApi(token: session.token!),
+            aiApi: aiApi ?? DioAiApi(token: session.token!),
+          );
         },
       ),
     );

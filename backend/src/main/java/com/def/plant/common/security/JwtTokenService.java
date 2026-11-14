@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -47,6 +48,7 @@ public class JwtTokenService {
 		Instant now = Instant.now();
 		Instant expiration = now.plus(EXPIRATION_DAYS, ChronoUnit.DAYS);
 		String token = Jwts.builder()
+				.id(UUID.randomUUID().toString())
 				.subject(Long.toString(userId))
 				.claim("username", username)
 				.issuedAt(Date.from(now))

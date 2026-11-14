@@ -19,7 +19,7 @@ Riverpod、go_router、image_picker 和 fl_chart 尚未引入。组件引入后�
 
 已确定：
 
-- 持久化使用 MyBatis-Plus。数据库变更使用 Flyway。
+- 持久化使用 MyBatis-Plus。建表脚本位于 `backend/src/main/resources/db/migration/`。后端启动不执行这些脚本。
 - 登录签发有效期 7 天的 JWT。当前令牌保存在服务器上的 Redis，键为 `plant:jwt:token:{用户编号}`，有效期与令牌一致。再次登录覆盖旧令牌，退出删除令牌。
 - 账号去掉首尾空白并转为小写，长度 3–32，只允许字母、数字和下划线。唯一约束建立在规范化结果上。
 - 密码使用 BCrypt 哈希，长度 8–64，保存前不改写密码内容。

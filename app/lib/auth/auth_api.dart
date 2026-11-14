@@ -47,13 +47,16 @@ class AuthException implements Exception {
   final String message;
 }
 
-/// 注册、登录、当前用户和退出。
+/// 注册、登录、重置密码、当前用户和退出。
 abstract class AuthApi {
   /// 注册账号。
   Future<AuthUser> register(String username, String password);
 
   /// 登录并取得令牌。
   Future<LoginResult> login(String username, String password);
+
+  /// 按账号名称设置新密码，成功后需要重新登录。
+  Future<void> resetPassword(String username, String newPassword);
 
   /// 用令牌读取当前用户。
   Future<AuthUser> currentUser(String token);
@@ -97,6 +100,16 @@ class DioAuthApi implements AuthApi {
     return LoginResult(
       token: body['token'] as String,
       user: AuthUser.fromJson(body['user'] as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  Future<void> resetPassword(String username, String newPassword) {
+    return _send(
+      () => dio.post<void>(
+        '/users/reset-password',
+        data: {'username': username, 'newPassword': newPassword},
+      ),
     );
   }
 
