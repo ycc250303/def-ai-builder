@@ -35,10 +35,10 @@ public class AiConversationServiceImpl implements AiConversationService {
     @Transactional
     public ConversationResponse create(long userId, ConversationRequest request) {
         if (request == null) throw new BusinessException(ErrorCode.INVALID_AI_INPUT);
-        if (request.plantId() != null) plants.get(userId, request.plantId());
+        var plant = request.plantId() == null ? null : plants.get(userId, request.plantId());
         String title = request.title() == null ? "" : request.title().strip();
         if (title.codePointCount(0, title.length()) > 100) throw new BusinessException(ErrorCode.INVALID_AI_INPUT);
-        if (title.isEmpty()) title = request.plantId() == null ? "养护问答" : "植物养护问答";
+        if (title.isEmpty()) title = plant == null ? "养护问答" : plant.nickname();
         String id = UUID.randomUUID().toString();
         mapper.create(id, userId, request.plantId() == null ? "GENERAL" : "PLANT", request.plantId(), title);
         return get(userId, id);

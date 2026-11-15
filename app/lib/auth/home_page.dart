@@ -7,20 +7,20 @@ import 'auth_api.dart';
 import '../ai/ai_api.dart';
 import '../ai/ai_pages.dart';
 
-/// 登录后的植物列表，提供新建、详情和退出入口。
+/// 登录后的主页面，通过底部导航切换植物、对话和用户。
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     required this.username,
     required this.onLogout,
     required this.plantApi,
-    this.aiApi,
+    required this.aiApi,
   });
 
   final String username;
   final Future<void> Function() onLogout;
   final PlantApi plantApi;
-  final AiApi? aiApi;
+  final AiApi aiApi;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -28,6 +28,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<List<PlantProfile>> _plants;
+  var _selectedIndex = 0;
+  var _conversationsVisited = false;
   var _loggingOut = false;
   String? _logoutError;
 
@@ -51,11 +53,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _open(PlantProfile plant) async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => PlantDetailPage(
-          id: plant.id,
-          api: widget.plantApi,
-          aiApi: widget.aiApi,
-        ),
+        builder: (_) => PlantDetailPage(id: plant.id, api: widget.plantApi),
       ),
     );
     if (mounted) {
@@ -82,21 +80,78 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _plantPage(),
+          // 首次打开时加载会话，之后保留列表及滚动位置。
+          if (_conversationsVisited)
+            AiConversationsPage(api: widget.aiApi)
+          else
+            const SizedBox.shrink(),
+          _userPage(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) => setState(() {
+          _selectedIndex = index;
+          if (index == 1) _conversationsVisited = true;
+        }),
+        destinations: const [
+          NavigationDestination(
+            key: Key('nav-plants'),
+            icon: Icon(Icons.local_florist_outlined),
+            selectedIcon: Icon(Icons.local_florist),
+            label: '植物',
+          ),
+          NavigationDestination(
+            key: Key('nav-conversations'),
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
+            label: '对话',
+          ),
+          NavigationDestination(
+            key: Key('nav-user'),
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: '用户',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _userPage() => Scaffold(
+    appBar: AppBar(title: const Text('用户')),
+    body: ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        const Icon(Icons.account_circle_outlined, size: 64),
+        const SizedBox(height: 16),
+        Text(
+          widget.username,
+          key: const Key('current-user'),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 24),
+        if (_logoutError != null)
+          Text(_logoutError!, key: const Key('logout-error')),
+        FilledButton(
+          key: const Key('logout'),
+          onPressed: _loggingOut ? null : _logout,
+          child: Text(_loggingOut ? '正在退出' : '退出登录'),
+        ),
+      ],
+    ),
+  );
+
+  Widget _plantPage() {
+    return Scaffold(
       appBar: AppBar(
         title: const Text('我的植物'),
         actions: [
-          IconButton(
-            key: const Key('open-ai-assistant'),
-            tooltip: '养护助手',
-            onPressed: widget.aiApi == null
-                ? null
-                : () => Navigator.of(context).push<void>(
-                    MaterialPageRoute(
-                      builder: (_) => AiConversationsPage(api: widget.aiApi!),
-                    ),
-                  ),
-            icon: const Icon(Icons.chat_outlined),
-          ),
           IconButton(
             key: const Key('refresh-plants'),
             tooltip: '刷新植物',
@@ -105,15 +160,11 @@ class _HomePageState extends State<HomePage> {
             }),
             icon: const Icon(Icons.refresh),
           ),
-          TextButton(
-            key: const Key('logout'),
-            onPressed: _loggingOut ? null : _logout,
-            child: const Text('退出'),
-          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('add-plant'),
+        heroTag: 'add-plant',
         onPressed: _create,
         icon: const Icon(Icons.add),
         label: const Text('新建植物'),
@@ -121,11 +172,6 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(widget.username, key: const Key('current-user')),
-          ),
-          if (_logoutError != null) Text(_logoutError!),
           Expanded(
             child: FutureBuilder<List<PlantProfile>>(
               future: _plants,

@@ -6,11 +6,17 @@ import 'package:hello_flutter/plants/plant_api.dart';
 import 'package:hello_flutter/plants/plant_form_page.dart';
 
 import 'support/fake_plant_api.dart';
+import 'support/fake_ai_api.dart';
 
 Future<void> showHome(WidgetTester tester, FakePlantApi api) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: HomePage(username: 'alice', onLogout: () async {}, plantApi: api),
+      home: HomePage(
+        username: 'alice',
+        onLogout: () async {},
+        plantApi: api,
+        aiApi: FakeAiApi(),
+      ),
     ),
   );
   await tester.pumpAndSettle();

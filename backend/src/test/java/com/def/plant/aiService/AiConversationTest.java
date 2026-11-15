@@ -106,6 +106,7 @@ class AiConversationTest {
         problem(send(path(id), "POST", JSON.writeValueAsString(Map.of("requestId",sameId,"content","其他问题")),token),409,"AI_REQUEST_CONFLICT");
         assertThat(send(path(id),"POST",question("那今天呢？"),token).body()).contains("event:done");
         JsonNode modelRequest = lastRequest();
+        assertThat(modelRequest.path("thinking").path("type").asText()).isEqualTo("disabled");
         assertThat(modelRequest.path("messages").toString()).contains("我昨天把绿萝移到了北窗", "请检查土壤干湿", "那今天呢");
         assertThat(modelRequest.path("messages").findValuesAsText("content").stream().filter(value -> value.equals("那今天呢？")).count()).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM ai_messages WHERE metadata->>'model'='test-model'",Integer.class)).isPositive();
@@ -130,10 +131,32 @@ class AiConversationTest {
     }
 
     @Test
+    void missingModelConfigurationKeepsAccountsAndHistoryAvailable() throws Exception {
+        String token = login("ai_unconfigured");
+        String id = create(token, null);
+        List<String> args = new ArrayList<>(List.of("--server.port=0", "--spring.main.banner-mode=off"));
+        settings().forEach((key, value) -> {
+            if (!key.equals("app.ai.api-key")) args.add("--" + key + "=" + value);
+        });
+        args.add("--app.ai.api-key=");
+        try (var application = SpringApplication.run(PlantApplication.class, args.toArray(String[]::new))) {
+            int localPort = ((WebServerApplicationContext) application).getWebServer().getPort();
+            assertThat(body(sendTo(localPort, "/plants", "GET", null, token)).isArray()).isTrue();
+            assertThat(body(sendTo(localPort, path(id), "GET", null, token)).size()).isZero();
+            var response = sendTo(localPort, path(id), "POST", question("你好"), token);
+            problem(response, 503, "AI_NOT_CONFIGURED");
+            assertThat(response.headers().firstValue("Content-Type").orElseThrow()).contains("application/problem+json");
+            assertThat(application.getBeanFactory().containsSingleton("modelHttpClient")).isFalse();
+        }
+        assertThat(body(send(path(id), "GET", null, token)).size()).isZero();
+    }
+
+    @Test
     void ownerChecksCoverEveryEndpointAndPlantAssociation() throws Exception {
         String owner = login("ai_owner"); String other=login("ai_other");
         long plant = body(send("/plants","POST","{\"species\":\"绿萝\",\"cultivationMethod\":\"WATER\"}",owner)).path("id").asLong();
         String id=create(owner,plant);
+        assertThat(body(send("/ai/conversations","GET",null,owner)).get(0).path("title").asText()).isEqualTo("绿萝");
         problem(send("/ai/conversations","POST",JSON.writeValueAsString(Map.of("plantId",plant)),other),404,"PLANT_NOT_FOUND");
         assertThat(body(send("/ai/conversations","GET",null,other)).size()).isZero();
         for (String method:List.of("GET","POST")) problem(send(path(id),method,question("你好"),other),404,"AI_CONVERSATION_NOT_FOUND");
@@ -154,7 +177,8 @@ class AiConversationTest {
     @Test
     void cancelledFailedAndExpiredTurnsStayOutOfMemory() throws Exception {
         String token=login("ai_states"); String id=create(token,null);
-        assertThat(send(path(id),"POST",question("FAIL"),token).body()).contains("event:error");
+        assertThat(send(path(id),"POST",question("FAIL"),token).body())
+                .contains("event:error", "AI_UPSTREAM_FAILED").doesNotContain("event:done", "isolated-test-key");
         assertThat(send(path(id),"POST",question("TRUNCATE"),token).body()).contains("AI_OUTPUT_INCOMPLETE");
         assertThat(send(path(id),"POST",question("绿".repeat(3500)),token).body()).contains("AI_CONTEXT_TOO_LONG");
         String request=question("WAIT");

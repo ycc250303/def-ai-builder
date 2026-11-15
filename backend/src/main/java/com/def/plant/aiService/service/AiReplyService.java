@@ -29,6 +29,7 @@ import com.def.plant.common.exception.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.errors.OpenAIException;
+import com.openai.errors.OpenAIServiceException;
 
 import jakarta.annotation.PreDestroy;
 
@@ -133,7 +134,7 @@ public class AiReplyService {
         }
         catch (Exception exception) {
             if (!run.stopping.get()) {
-                ErrorCode code = classify(exception);
+                ErrorCode code = classify(exception, run.turn.id());
                 if (code == null) {
                     log.error("问答执行缺陷: turnId={}", run.turn.id(), exception);
                     fail(run, "AI_INTERNAL_ERROR", "回复生成出现内部错误");
@@ -151,12 +152,16 @@ public class AiReplyService {
         }
     }
 
-    private ErrorCode classify(Exception exception) {
+    /** 按异常原因识别上游拒绝，日志只记录状态与执行编号，不转发任意上游正文。 */
+    private ErrorCode classify(Exception exception, String turnId) {
         boolean upstream = false;
         for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
             if (cause instanceof BusinessException business) return business.errorCode();
             if (cause instanceof DataAccessException) return ErrorCode.DATA_STORE_UNAVAILABLE;
             if (cause instanceof TimeoutException || cause instanceof java.io.InterruptedIOException) return ErrorCode.AI_TIMEOUT;
+            if (cause instanceof OpenAIServiceException response) {
+                log.warn("模型服务响应异常: turnId={}, status={}", turnId, response.statusCode());
+            }
             if (cause instanceof OpenAIException || cause instanceof IOException) upstream = true;
         }
         return upstream ? ErrorCode.AI_UPSTREAM_FAILED : null;

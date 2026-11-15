@@ -1,14 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:hello_flutter/ai/ai_api.dart';
 import 'package:hello_flutter/ai/ai_pages.dart';
 import 'package:hello_flutter/auth/home_page.dart';
-import 'package:hello_flutter/plants/plant_detail_page.dart';
 import 'package:hello_flutter/plants/plant_api.dart';
 
 import 'support/fake_plant_api.dart';
+import 'support/fake_ai_api.dart';
 
 void main() {
   testWidgets('会话列表可以创建、打开、恢复历史并确认删除', (tester) async {
@@ -117,41 +115,81 @@ void main() {
     expect(find.text('生成失败'), findsOneWidget);
   });
 
-  testWidgets('植物列表和植物主页均提供助手入口', (tester) async {
+  testWidgets('底部导航按植物、对话、用户排列并保留栏目状态', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final api = FakeAiApi();
     final plants = FakePlantApi();
+    await plants.create(const PlantInput(species: '绿萝'));
+    var loggedOut = false;
     await tester.pumpWidget(
       MaterialApp(
         home: HomePage(
           username: 'alice',
-          onLogout: () async {},
+          onLogout: () async {
+            loggedOut = true;
+          },
           plantApi: plants,
           aiApi: api,
         ),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('open-ai-assistant')));
+    final navigation = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    final destinations = navigation.destinations.cast<NavigationDestination>();
+    expect(destinations.map((item) => item.label), ['植物', '对话', '用户']);
+    expect(destinations.every((item) => item.icon is Icon), isTrue);
+    expect(navigation.selectedIndex, 0);
+    expect(find.byKey(const Key('plant-1')), findsOneWidget);
+    expect(find.byKey(const Key('current-user')), findsNothing);
+    expect(api.lists, 0);
+    expect(find.byKey(const Key('open-ai-assistant')), findsNothing);
+    await tester.tap(find.byKey(const Key('plant-1')));
     await tester.pumpAndSettle();
-    expect(find.byType(AiConversationsPage), findsOneWidget);
+    expect(find.text('品种：绿萝'), findsOneWidget);
+    expect(find.byKey(const Key('ask-plant-assistant')), findsNothing);
     await tester.pageBack();
     await tester.pumpAndSettle();
-    final plant = await plants.create(const PlantInput(species: '绿萝'));
-    await tester.pumpWidget(
-      MaterialApp(
-        home: PlantDetailPage(id: plant.id, api: plants, aiApi: api),
-      ),
-    );
+
+    await tester.tap(find.byKey(const Key('nav-conversations')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('ask-plant-assistant')));
-    await tester.tap(find.byKey(const Key('ask-plant-assistant')));
+    expect(find.byType(AiConversationsPage), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    expect(find.byKey(const Key('add-plant')), findsNothing);
+    expect(api.lists, 1);
+    await tester.tap(find.byKey(const Key('new-conversation')));
     await tester.pumpAndSettle();
+    expect(api.createdPlant, isNull);
+    expect(find.byKey(const Key('ai-question')), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('conversation-c1')), findsOneWidget);
     expect(
-      tester
-          .widget<AiConversationsPage>(find.byType(AiConversationsPage))
-          .plantId,
-      plant.id,
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      1,
     );
+    final loaded = api.lists;
+
+    await tester.tap(find.byKey(const Key('nav-user')));
+    await tester.pumpAndSettle();
+    expect(find.text('alice'), findsOneWidget);
+    expect(find.byKey(const Key('logout')), findsOneWidget);
+    expect(find.byKey(const Key('refresh-plants')), findsNothing);
+    await tester.tap(find.byKey(const Key('nav-conversations')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('conversation-c1')), findsOneWidget);
+    expect(api.lists, loaded);
+    await tester.tap(find.byKey(const Key('nav-plants')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('plant-1')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('nav-user')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('logout')));
+    await tester.pumpAndSettle();
+    expect(loggedOut, isTrue);
+    expect(tester.takeException(), isNull);
   });
 }
 
@@ -165,73 +203,4 @@ Future<void> showChat(WidgetTester tester, FakeAiApi api) async {
     ),
   );
   await tester.pumpAndSettle();
-}
-
-AiMessage message(String role, String content, String status) => AiMessage(
-  id: role,
-  turnId: 't1',
-  sequence: 1,
-  role: role,
-  content: content,
-  status: status,
-);
-
-class FakeAiApi implements AiApi {
-  final items = <AiConversation>[];
-  List<AiMessage> history = [];
-  final requestIds = <String>[];
-  StreamController<AiEvent>? events;
-  int? createdPlant;
-  int loads = 0;
-  bool cancelled = false;
-  bool fail = false;
-  @override
-  Future<List<AiConversation>> list({int offset = 0}) async =>
-      items.skip(offset).toList();
-  @override
-  Future<AiConversation> create({int? plantId}) async {
-    createdPlant = plantId;
-    final item = AiConversation(id: 'c1', title: '养护问答', plantId: plantId);
-    items.add(item);
-    return item;
-  }
-
-  @override
-  Future<List<AiMessage>> messages(String id, {int? before}) async {
-    loads++;
-    return List.of(history);
-  }
-
-  @override
-  AiCall send(String id, String requestId, String content) {
-    requestIds.add(requestId);
-    if (fail) return AiCall(Stream.error(const AiException('网络暂时不可用')), () {});
-    events = StreamController<AiEvent>();
-    return AiCall(events!.stream, () {
-      if (!events!.isClosed) unawaited(events!.close());
-    });
-  }
-
-  void finish() {
-    history = [
-      message('USER', '你好', 'COMPLETED'),
-      message('ASSISTANT', '检查土壤干湿。', 'COMPLETED'),
-    ];
-    events!.add(const AiEvent('done', {'content': '检查土壤干湿。'}));
-    unawaited(events!.close());
-  }
-
-  @override
-  Future<void> cancel(String id, String turnId) async {
-    cancelled = true;
-    history = [
-      message('USER', '你好', 'CANCELLED'),
-      message('ASSISTANT', '部分回复', 'CANCELLED'),
-    ];
-  }
-
-  @override
-  Future<void> delete(String id) async {
-    items.removeWhere((item) => item.id == id);
-  }
 }

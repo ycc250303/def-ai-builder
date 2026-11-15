@@ -102,7 +102,7 @@ class _AiConversationsPageState extends State<AiConversationsPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('养护助手'),
+      title: const Text('对话'),
       actions: [
         IconButton(
           key: const Key('refresh-conversations'),
@@ -114,6 +114,7 @@ class _AiConversationsPageState extends State<AiConversationsPage> {
     ),
     floatingActionButton: FloatingActionButton.extended(
       key: const Key('new-conversation'),
+      heroTag: 'new-conversation',
       onPressed: _loading ? null : _create,
       icon: const Icon(Icons.add),
       label: const Text('新建会话'),
@@ -285,8 +286,9 @@ class _AiChatPageState extends State<AiChatPage> {
         _bottom();
       }
     } on AiException catch (error) {
-      if (mounted && !_cancelling && !_cancelled)
+      if (mounted && !_cancelling && !_cancelled) {
         setState(() => _error = error.message);
+      }
     } finally {
       if (mounted) {
         setState(() {

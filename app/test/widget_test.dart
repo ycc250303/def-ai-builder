@@ -45,6 +45,8 @@ void main() {
     await tester.tap(find.byKey(const Key('submit')));
     await tester.pump();
 
+    await tester.tap(find.byKey(const Key('nav-user')));
+    await tester.pumpAndSettle();
     expect(find.text('alice'), findsOneWidget);
     expect(api.registeredUsername, 'Alice');
 
@@ -53,6 +55,31 @@ void main() {
 
     expect(find.text('登录'), findsWidgets);
     expect(api.loggedOut, isTrue);
+  });
+
+  testWidgets('用户页面退出失败保留账号与导航，重试成功后返回登录', (tester) async {
+    final api = _FakeAuthApi()..logoutFailure = '暂时无法退出';
+    final session = AuthSession(api: api, store: MemoryTokenStore());
+    await session.restore();
+    await session.submit(false, 'alice', 'password1');
+    await tester.pumpWidget(
+      PlantApp(session: session, plantApi: FakePlantApi()),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('nav-user')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('logout')));
+    await tester.pumpAndSettle();
+    expect(find.text('暂时无法退出'), findsOneWidget);
+    expect(find.text('alice'), findsOneWidget);
+    expect(session.user!.username, 'alice');
+    expect(find.byType(NavigationBar), findsOneWidget);
+    api.logoutFailure = null;
+    await tester.tap(find.byKey(const Key('logout')));
+    await tester.pumpAndSettle();
+    expect(session.user, isNull);
+    expect(find.byType(LoginPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
   });
 
   testWidgets('忘记密码按账号重置，成功后返回登录并清空密码', (tester) async {
@@ -144,6 +171,7 @@ class _FakeAuthApi implements AuthApi {
   String? resetUsername;
   String? resetNewPassword;
   String? resetFailure;
+  String? logoutFailure;
 
   @override
   Future<void> resetPassword(String username, String newPassword) async {
@@ -167,6 +195,7 @@ class _FakeAuthApi implements AuthApi {
 
   @override
   Future<void> logout(String token) async {
+    if (logoutFailure != null) throw AuthException(logoutFailure!);
     loggedOut = true;
   }
 

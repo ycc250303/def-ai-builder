@@ -2,21 +2,13 @@ import 'package:material_ui/material_ui.dart';
 
 import 'plant_api.dart';
 import 'plant_form_page.dart';
-import '../ai/ai_api.dart';
-import '../ai/ai_pages.dart';
 
 /// 植物主页，显示完整档案并提供编辑和删除。
 class PlantDetailPage extends StatefulWidget {
-  const PlantDetailPage({
-    super.key,
-    required this.id,
-    required this.api,
-    this.aiApi,
-  });
+  const PlantDetailPage({super.key, required this.id, required this.api});
 
   final int id;
   final PlantApi api;
-  final AiApi? aiApi;
 
   @override
   State<PlantDetailPage> createState() => _PlantDetailPageState();
@@ -148,19 +140,6 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
                   if (_error != null)
                     Text(_error!, key: const Key('plant-error')),
                   const SizedBox(height: 24),
-                  if (widget.aiApi != null)
-                    FilledButton(
-                      key: const Key('ask-plant-assistant'),
-                      onPressed: () => Navigator.of(context).push<void>(
-                        MaterialPageRoute(
-                          builder: (_) => AiConversationsPage(
-                            api: widget.aiApi!,
-                            plantId: plant.id,
-                          ),
-                        ),
-                      ),
-                      child: const Text('询问养护助手'),
-                    ),
                   FilledButton(
                     key: const Key('edit-plant'),
                     onPressed: _deleting ? null : () => _edit(plant),
