@@ -3,6 +3,9 @@ name: 发布后端和 Android 安装包
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
+      - 'app/**'
   workflow_dispatch:
 
 concurrency:
@@ -10,8 +13,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    name: 检测目录变更
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 检测本次推送的文件变更
+        if: github.event_name == 'push'
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            backend:
+              - 'backend/**'
+            app:
+              - 'app/**'
+
   deploy:
     name: 构建并部署后端
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
@@ -56,6 +86,8 @@ jobs:
 
   apk:
     name: 打包 Android 正式安装包
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -72,9 +104,8 @@ jobs:
 
       - name: 准备 Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: 接受 Android SDK 许可
-        run: yes | sdkmanager --licenses >/dev/null || true
+        with:
+          packages: platform-tools
 
       - name: 准备 Flutter 3.50.0
         uses: subosito/flutter-action@v2
