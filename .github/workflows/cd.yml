@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'data/plant-knowledge/**'
       - 'app/**'
   workflow_dispatch:
 
@@ -35,6 +36,7 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
+              - 'data/plant-knowledge/**'
             app:
               - 'app/**'
 

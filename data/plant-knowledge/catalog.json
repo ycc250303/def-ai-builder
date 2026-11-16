@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "verifiedAt": "2026-11-15",
+  "usageStatus": "REFERENCE_ONLY",
+  "entries": [
+    {"nameZh":"绿萝","aliasesZh":[],"englishNames":["golden pothos"],"preferredPaths":["/plants/epipremnum-aureum/"]},
+    {"nameZh":"龟背竹","aliasesZh":[],"englishNames":["Swiss cheese plant"],"preferredPaths":["/plants/monstera-deliciosa/"]},
+    {"nameZh":"吊兰","aliasesZh":[],"englishNames":["spider plant"],"preferredPaths":["/plants/chlorophytum-comosum/"]},
+    {"nameZh":"虎皮兰","aliasesZh":["虎尾兰"],"englishNames":["snake plant"],"preferredPaths":["/plants/dracaena-trifasciata/"]},
+    {"nameZh":"金钱树","aliasesZh":["雪铁芋"],"englishNames":["ZZ plant"],"preferredPaths":["/plants/zamioculcas-zamiifolia/"]},
+    {"nameZh":"玉树","aliasesZh":["燕子掌"],"englishNames":["jade plant"],"preferredPaths":["/plants/crassula-ovata/"]},
+    {"nameZh":"芦荟","aliasesZh":["库拉索芦荟"],"englishNames":["aloe vera"],"preferredPaths":["/plants/aloe-vera/"]},
+    {"nameZh":"橡皮树","aliasesZh":["印度榕"],"englishNames":["rubber plant"],"preferredPaths":["/plants/ficus-elastica/"]},
+    {"nameZh":"仙人球","aliasesZh":[],"englishNames":["ball cactus","Easter lily cactus"],"preferredPaths":["/plants/parodia/","/plants/echinopsis-oxygona/"]}
+  ]
+}

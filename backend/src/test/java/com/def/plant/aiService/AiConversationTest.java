@@ -2,6 +2,7 @@ package com.def.plant.aiService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -18,30 +19,41 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.server.context.WebServerApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.flywaydb.core.Flyway;
 
 import com.def.plant.PlantApplication;
-import com.def.plant.aiService.service.impl.AiConversationServiceImpl;
+import com.def.plant.aiService.service.AiConversationService;
+import com.def.plant.aiService.dto.ConversationRequest;
+import com.def.plant.aiService.dto.QuestionRequest;
+import com.def.plant.aiService.mapper.AiMapper;
+import com.def.plant.plantKnowledgeService.client.NcStateClient;
+import com.def.plant.plantKnowledgeService.KnowledgeFixtures;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -61,7 +73,9 @@ class AiConversationTest {
     final HttpClient http = HttpClient.newHttpClient();
     @LocalServerPort int port;
     @Autowired JdbcTemplate jdbc;
-    @MockitoSpyBean AiConversationServiceImpl conversations;
+    @Autowired AiMapper mapper;
+    @MockitoSpyBean AiConversationService conversations;
+    @MockitoBean NcStateClient knowledgeClient;
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -88,6 +102,98 @@ class AiConversationTest {
     @AfterAll static void closeModel() { MODEL.stop(0); }
 
     @Test
+    void schemaUpgradePreservesHistoryAndModelMetadata() {
+        String schema = "ai_upgrade";
+        Flyway.configure().dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
+                .schemas(schema).defaultSchema(schema).target("3").load().migrate();
+        var source = new DriverManagerDataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
+        var connectionProperties = new Properties();
+        connectionProperties.setProperty("currentSchema", schema);
+        source.setConnectionProperties(connectionProperties);
+        var old = new JdbcTemplate(source);
+        long userId = old.queryForObject("INSERT INTO users(username,password) VALUES ('migration','test') RETURNING id", Long.class);
+        String conversationId = UUID.randomUUID().toString();
+        String turnId = UUID.randomUUID().toString();
+        String requestId = UUID.randomUUID().toString();
+        old.update("INSERT INTO ai_conversations(id,user_id,scope,title) VALUES (?,?,'GENERAL','历史会话')", conversationId, userId);
+        old.update("""
+                INSERT INTO ai_turns(id,conversation_id,request_id,sequence,status,run_id,lease_until,model,prompt_version)
+                VALUES (?,?,?,1,'COMPLETED',?,CURRENT_TIMESTAMP,'historical-model','plant-care-v1')
+                """, turnId, conversationId, requestId, UUID.randomUUID().toString());
+        old.update("INSERT INTO ai_messages(id,turn_id,sequence,role,content) VALUES (?,?,0,'USER','历史问题')",
+                UUID.randomUUID().toString(), turnId);
+        old.update("""
+                INSERT INTO ai_messages(id,turn_id,sequence,role,content,metadata)
+                VALUES (?,?,1,'ASSISTANT','历史回答','{"inputTokens":10}'::jsonb)
+                """, UUID.randomUUID().toString(), turnId);
+
+        Flyway.configure().dataSource(source).schemas(schema).defaultSchema(schema).load().migrate();
+
+        assertThat(old.queryForObject("SELECT user_id FROM ai_conversations WHERE id=?", Long.class, conversationId)).isEqualTo(userId);
+        assertThat(old.queryForObject("SELECT status FROM ai_turns WHERE id=?", String.class, turnId)).isEqualTo("COMPLETED");
+        assertThat(old.queryForObject("SELECT request_id FROM ai_turns WHERE id=?", String.class, turnId)).isEqualTo(requestId);
+        assertThat(old.queryForList("SELECT content FROM ai_messages ORDER BY sequence", String.class)).containsExactly("历史问题", "历史回答");
+        assertThat(old.queryForObject("SELECT metadata->>'model' FROM ai_messages WHERE sequence=1", String.class)).isEqualTo("historical-model");
+        assertThat(old.queryForObject("SELECT metadata->>'inputTokens' FROM ai_messages WHERE sequence=1", String.class)).isEqualTo("10");
+        assertThat(old.queryForList("SELECT column_name FROM information_schema.columns WHERE table_schema=? AND table_name='ai_turns'",
+                String.class, schema)).doesNotContain("run_id", "model", "prompt_version");
+        assertThat(old.queryForList("SELECT column_name FROM information_schema.columns WHERE table_schema=? AND table_name='ai_messages'",
+                String.class, schema)).doesNotContain("updated_at");
+    }
+
+    @Test
+    void simultaneousQuestionsCreateOnlyOneActiveTurn() throws Exception {
+        long userId = jdbc.queryForObject("INSERT INTO users(username,password) VALUES ('ai_parallel','test') RETURNING id", Long.class);
+        String id = conversations.create(userId, new ConversationRequest(null, null)).id();
+        var ready = new java.util.concurrent.CountDownLatch(2);
+        var start = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.Callable<String> submit = () -> {
+            ready.countDown();
+            start.await();
+            try {
+                conversations.accept(userId, id, new QuestionRequest(UUID.randomUUID().toString(), "同时提问"));
+                return "ACCEPTED";
+            } catch (com.def.plant.common.exception.BusinessException exception) {
+                return exception.errorCode().code();
+            }
+        };
+        try (var workers = Executors.newVirtualThreadPerTaskExecutor()) {
+            var first = workers.submit(submit);
+            var second = workers.submit(submit);
+            boolean bothReady = ready.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            start.countDown();
+            assertThat(bothReady).isTrue();
+            assertThat(List.of(first.get(5, java.util.concurrent.TimeUnit.SECONDS), second.get(5, java.util.concurrent.TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder("ACCEPTED", "AI_CONVERSATION_BUSY");
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM ai_turns WHERE conversation_id=?", Integer.class, id)).isEqualTo(1);
+        assertThat(conversations.messages(userId, id, Long.MAX_VALUE, 20)).hasSize(2);
+    }
+
+    @Test
+    void terminalTurnsCannotBeOverwrittenAndContentFailureRollsBackState() {
+        long userId = jdbc.queryForObject("INSERT INTO users(username,password) VALUES ('ai_atomic','test') RETURNING id", Long.class);
+        String id = conversations.create(userId, new ConversationRequest(null, null)).id();
+        var first = conversations.accept(userId, id, new QuestionRequest(UUID.randomUUID().toString(), "保存正文"));
+        // 非法 JSON 使正文保存失败，验证此前的状态更新也被同一事务回滚。
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> conversations.save(userId, first.turn(), "正文", "invalid-json", "COMPLETED", null))
+                .isInstanceOf(org.springframework.dao.DataAccessException.class);
+        assertThat(conversations.turn(userId, id, first.turn().id()).status()).isEqualTo("ACCEPTED");
+        assertThat(conversations.turn(userId, id, first.turn().id()).content()).isEmpty();
+        assertThat(conversations.save(userId, first.turn(), "最终正文", "{}", "COMPLETED", null)).isTrue();
+        assertThat(conversations.cancel(userId, id, first.turn().id()).status()).isEqualTo("COMPLETED");
+        assertThat(conversations.save(userId, first.turn(), "过期写入", "{}", "FAILED", "AI_UPSTREAM_FAILED")).isFalse();
+        assertThat(mapper.renew(userId, first.turn().id())).isZero();
+        assertThat(conversations.turn(userId, id, first.turn().id()).content()).isEqualTo("最终正文");
+
+        var second = conversations.accept(userId, id, new QuestionRequest(UUID.randomUUID().toString(), "新的问题"));
+        conversations.cancel(userId, id, second.turn().id());
+        assertThat(conversations.save(userId, second.turn(), "取消后正文", "{}", "COMPLETED", null)).isFalse();
+        assertThat(conversations.turn(userId, id, second.turn().id()).status()).isEqualTo("CANCELLED");
+        assertThat(conversations.turn(userId, id, second.turn().id()).content()).isEmpty();
+    }
+
+    @Test
     void streamPersistsHistoryAndDuplicateRequestsDoNotGenerateTwice() throws Exception {
         String token = login("ai_history");
         String id = create(token, null);
@@ -99,6 +205,8 @@ class AiConversationTest {
         assertThat(messages.size()).isEqualTo(2);
         assertThat(messages.get(1).path("content").asText()).isEqualTo("请检查土壤干湿。");
         assertThat(messages.get(1).path("status").asText()).isEqualTo("COMPLETED");
+        String turnId = messages.get(1).path("turnId").asText();
+        assertThat(body(send("/ai/conversations/" + id + "/turns/" + turnId, "GET", null, token)).has("runId")).isFalse();
         int calls = MODEL_REQUESTS.size();
         assertThat(send(path(id), "POST", request, token).body()).contains("event:done");
         assertThat(MODEL_REQUESTS).hasSize(calls);
@@ -207,9 +315,63 @@ class AiConversationTest {
         assertThat(send(path(id),"POST",question("TOOL:"+own),token).body()).contains("event:done");
         assertThat(lastRequest().path("messages").toString()).contains("tool","吊兰");
         String other=login("ai_tool_other");
-        long otherPlant=body(send("/plants","POST","{\"species\":\"龟背竹\"}",other)).path("id").asLong();
+        String privateNickname = "私有植物-" + UUID.randomUUID();
+        long otherPlant=body(send("/plants","POST",JSON.writeValueAsString(Map.of("species", "龟背竹", "nickname", privateNickname)),other)).path("id").asLong();
         assertThat(send(path(id),"POST",question("TOOL:"+otherPlant),token).body()).contains("PLANT_NOT_FOUND");
-        assertThat(lastRequest().toString()).doesNotContain("龟背竹");
+        assertThat(lastRequest().toString()).doesNotContain(privateNickname);
+        for (JsonNode message : lastRequest().path("messages")) {
+            if (!message.path("role").asText().equals("system")) assertThat(message.toString()).doesNotContain("龟背竹");
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"CARE", "CARE_COMBINED"})
+    void careToolReturnsSourceEvidenceThroughActualSpringAiAndPersistsReply(String questionText) throws Exception {
+        when(knowledgeClient.fetch("/find_a_plant/?q=golden+pothos"))
+                .thenReturn(KnowledgeFixtures.search("/plants/epipremnum-aureum/"));
+        when(knowledgeClient.fetch("/plants/epipremnum-aureum/")).thenReturn(KnowledgeFixtures.detail());
+        String token = login(questionText.equals("CARE") ? "ai_care_tool" : "ai_care_combined"); String id = create(token, null);
+        assertThat(send(path(id), "POST", question(questionText), token).body()).contains("event:done");
+        JsonNode modelRequest = lastRequest();
+        assertThat(modelRequest.path("messages").toString()).contains("CATEGORY_REFERENCE", "WATERING",
+                "https://plants.ces.ncsu.edu/plants/epipremnum-aureum/", "In winter");
+        JsonNode function = null;
+        for (JsonNode tool : modelRequest.path("tools")) {
+            if (tool.path("function").path("name").asText().equals("queryPlantCare")) function = tool.path("function");
+        }
+        assertThat(function).isNotNull();
+        assertThat(function.path("parameters").path("required").toString()).contains("plantName", "searchTerms")
+                .doesNotContain("topics", "question");
+        JsonNode topicValues = function.path("parameters").path("properties").path("topics").path("items").path("enum");
+        assertThat(topicValues.isArray()).isTrue();
+        assertThat(topicValues).hasSize(com.def.plant.plantKnowledgeService.dto.CareTopic.values().length);
+        assertThat(topicValues.toString()).contains("GENERAL_CARE", "WATERING", "REPOTTING");
+        if (questionText.equals("CARE_COMBINED")) {
+            JsonNode result = null;
+            for (JsonNode message : modelRequest.path("messages")) {
+                if (message.path("role").asText().equals("tool")) result = JSON.readTree(message.path("content").asText());
+            }
+            assertThat(result).isNotNull();
+            assertThat(result.path("topicsWithoutExplicitEvidence").toString()).isEqualTo("[\"HUMIDITY\"]");
+            assertThat(result.path("sources").get(0).path("evidence")).anySatisfy(item -> {
+                assertThat(item.path("topic").asText()).isEqualTo("REPOTTING");
+                assertThat(item.path("text").asText()).contains("Re-pot in spring");
+            });
+        }
+        assertThat(body(send(path(id), "GET", null, token)).get(1).path("status").asText()).isEqualTo("COMPLETED");
+    }
+
+    @Test
+    void careSourceFailureTerminatesSseAndKeepsTurnOutOfContext() throws Exception {
+        when(knowledgeClient.fetch("/find_a_plant/?q=golden+pothos"))
+                .thenThrow(new com.def.plant.common.exception.BusinessException(
+                        com.def.plant.common.exception.ErrorCode.PLANT_KNOWLEDGE_UNAVAILABLE));
+        String token = login("ai_care_failure"); String id = create(token, null);
+        var response = send(path(id), "POST", question("CARE"), token);
+        assertThat(response.body()).contains("event:error", "PLANT_KNOWLEDGE_UNAVAILABLE").doesNotContain("event:done");
+        assertThat(body(send(path(id), "GET", null, token)).get(1).path("status").asText()).isEqualTo("FAILED");
+        assertThat(send(path(id), "POST", question("继续问答"), token).body()).contains("event:done");
+        assertThat(lastRequest().path("messages").toString()).doesNotContain("\"content\":\"CARE\"");
     }
 
     @Test
@@ -322,9 +484,12 @@ class AiConversationTest {
             }
             if(question.equals("FAIL")){exchange.sendResponseHeaders(500,-1);return;}
             exchange.getResponseHeaders().set("Content-Type","text/event-stream");exchange.sendResponseHeaders(200,0);
-            if((question.startsWith("TOOL:")&&!toolResult)||question.equals("LOOP")) {
-                String arguments=JSON.writeValueAsString(question.equals("LOOP")?Map.of("offset",0):Map.of("plantId",Long.parseLong(question.substring(5))));
-                String name=question.equals("LOOP")?"listPlants":"getPlant";
+            if(((question.startsWith("TOOL:") || question.equals("CARE") || question.equals("CARE_COMBINED"))&&!toolResult)||question.equals("LOOP")) {
+                String arguments=JSON.writeValueAsString(question.equals("CARE") || question.equals("CARE_COMBINED")
+                        ? Map.of("plantName", "绿萝", "searchTerms", List.of("golden pothos"), "topics",
+                                question.equals("CARE_COMBINED") ? List.of("GENERAL_CARE", "WATERING", "REPOTTING", "WATERING", "HUMIDITY") : List.of("WATERING"))
+                        : question.equals("LOOP")?Map.of("offset",0):Map.of("plantId",Long.parseLong(question.substring(5))));
+                String name=question.equals("CARE") || question.equals("CARE_COMBINED")?"queryPlantCare":question.equals("LOOP")?"listPlants":"getPlant";
                 chunk(exchange,Map.of("role","assistant","tool_calls",List.of(Map.of("index",0,"id","call_"+MODEL_REQUESTS.size(),"type","function","function",Map.of("name",name,"arguments",arguments)))),null);
                 chunk(exchange,Map.of(),"tool_calls");
             } else {

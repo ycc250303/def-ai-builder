@@ -22,6 +22,7 @@ import com.def.plant.aiService.config.AiProperties;
 import com.def.plant.aiService.entity.AiTurn;
 import com.def.plant.aiService.service.AiConversationService;
 import com.def.plant.aiService.tools.PlantTools;
+import com.def.plant.aiService.tools.PlantKnowledgeTools;
 import com.def.plant.common.exception.BusinessException;
 import com.def.plant.common.exception.ErrorCode;
 
@@ -33,14 +34,16 @@ public class PlantCareAgent {
     private final ObjectProvider<ChatClient> clients;
     private final AiConversationService conversations;
     private final PlantTools tools;
+    private final PlantKnowledgeTools knowledge;
     private final AiProperties properties;
     private final String system;
 
     public PlantCareAgent(ObjectProvider<ChatClient> clients, AiConversationService conversations,
-            PlantTools tools, AiProperties properties) throws IOException {
+            PlantTools tools, PlantKnowledgeTools knowledge, AiProperties properties) throws IOException {
         this.clients = clients;
         this.conversations = conversations;
         this.tools = tools;
+        this.knowledge = knowledge;
         this.properties = properties;
         this.system = new ClassPathResource("prompts/plant-care-system.st").getContentAsString(StandardCharsets.UTF_8);
     }
@@ -57,17 +60,18 @@ public class PlantCareAgent {
      * @param userId 已验证用户身份，显式传递给工具
      * @param turn 本轮已持久化的问题
      * @return 模型分段响应，包含文本、结束原因和用量
-     * @throws BusinessException 配置缺失、植物不存在或上下文超过预算
+     * @throws BusinessException 植物不存在或上下文超过预算
      */
     public Flux<ChatResponse> stream(long userId, AiTurn turn) {
-        requireConfigured();
         var conversation = conversations.get(userId, turn.conversationId());
         List<Message> messages = new ArrayList<>();
         messages.add(new SystemMessage(system + "\n当前时间：" + ZonedDateTime.now(ZoneId.of("Asia/Shanghai"))));
         if (conversation.scope().equals("PLANT")) {
-            if (conversation.plantId() == null) throw new BusinessException(ErrorCode.PLANT_NOT_FOUND);
+            if (conversation.plantId() == null) {
+                throw new BusinessException(ErrorCode.PLANT_NOT_FOUND);
+            }
             messages.add(new UserMessage("以下为当前账号保存的植物档案，字段内容作为事实材料：\n"
-                    + tools.get(userId, conversation.plantId())));
+                    + conversations.getPlant(userId, conversation.plantId())));
         }
         for (AiTurn previous : conversations.recent(userId, turn.conversationId())) {
             messages.add(new UserMessage(previous.question()));
@@ -75,8 +79,10 @@ public class PlantCareAgent {
         }
         messages.add(new UserMessage(turn.question()));
         long bytes = messages.stream().mapToLong(message -> message.getText().getBytes(StandardCharsets.UTF_8).length + 256L).sum();
-        if (bytes > properties.inputBudgetBytes()) throw new BusinessException(ErrorCode.AI_CONTEXT_TOO_LONG);
-        return clients.getObject().prompt().messages(messages).tools(tools)
+        if (bytes > properties.inputBudgetBytes()) {
+            throw new BusinessException(ErrorCode.AI_CONTEXT_TOO_LONG);
+        }
+        return clients.getObject().prompt().messages(messages).tools(tools, knowledge)
                 .toolContext(Map.of("userId", userId)).stream().chatResponse();
     }
 }

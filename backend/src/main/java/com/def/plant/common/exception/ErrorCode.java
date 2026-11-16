@@ -7,6 +7,15 @@ import org.springframework.http.HttpStatus;
  */
 public enum ErrorCode {
 
+	/** 植物俗名、英文检索词或养护主题不符合工具参数约束。 */
+	INVALID_PLANT_KNOWLEDGE_QUERY(HttpStatus.BAD_REQUEST, "INVALID_PLANT_KNOWLEDGE_QUERY", "请检查植物名称、英文检索词和养护主题"),
+	/** 植物资料网站连接超时、拒绝访问或暂时不可用。 */
+	PLANT_KNOWLEDGE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "PLANT_KNOWLEDGE_UNAVAILABLE", "植物资料来源暂时无法访问"),
+	/** 来源网站的必要结构缺失，无法可靠读取搜索结果或正文。 */
+	PLANT_KNOWLEDGE_PAGE_CHANGED(HttpStatus.BAD_GATEWAY, "PLANT_KNOWLEDGE_PAGE_CHANGED", "植物资料页面结构发生变化，暂时无法读取"),
+	/** 页面或主题证据超过读取预算，需要缩小查询范围。 */
+	PLANT_KNOWLEDGE_TOO_LARGE(HttpStatus.UNPROCESSABLE_CONTENT, "PLANT_KNOWLEDGE_TOO_LARGE", "植物资料超过读取预算，请减少查询主题"),
+
 	/** 会话标题、提问、UUID 或分页参数不合法。 */
 	INVALID_AI_INPUT(HttpStatus.BAD_REQUEST, "INVALID_AI_INPUT", "请检查会话名称、问题内容、编号和分页参数"),
 	/** 当前用户没有对应会话。 */

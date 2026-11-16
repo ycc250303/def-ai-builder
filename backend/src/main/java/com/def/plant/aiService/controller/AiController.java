@@ -42,17 +42,35 @@ public class AiController {
         this.conversations = conversations; this.replies = replies;
     }
 
+    /**
+     * 创建会话。
+     * @param request 会话请求
+     * @return 会话响应
+     */
     @PostMapping
     public ConversationResponse create(@RequestBody ConversationRequest request) {
         return conversations.create(owner(), request);
     }
 
+    /**
+     * 查询会话列表。
+     * @param offset 偏移量
+     * @param limit 限制
+     * @return 会话列表
+     */
     @GetMapping
     public List<ConversationResponse> list(@RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "20") int limit) {
         return conversations.list(owner(), offset, limit);
     }
 
+    /**
+     * 查询单个会话消息列表。
+     * @param id 会话 UUID
+     * @param before 仅查询此轮次之前的历史
+     * @param limit 限制
+     * @return 消息列表
+     */
     @GetMapping("/{id}/messages")
     public List<MessageResponse> messages(@PathVariable String id,
             @RequestParam(defaultValue = "9223372036854775807") long before,
@@ -61,7 +79,7 @@ public class AiController {
     }
 
     /**
-     * 请求线程内验证身份，后续异步执行显式传递用户编号。
+     * 发送问题，流式返回回答。
      * @param id 会话 UUID
      * @param request 问题和客户端去重 UUID
      * @return SSE 文本片段及持久化状态事件
@@ -71,16 +89,32 @@ public class AiController {
         return replies.reply(owner(), id, request);
     }
 
+    /**
+     * 查询单个问答详情。
+     * @param id 会话 UUID
+     * @param turnId 问答 UUID
+     * @return 问答
+     */
     @GetMapping("/{id}/turns/{turnId}")
     public AiTurn turn(@PathVariable String id, @PathVariable String turnId) {
         return conversations.turn(owner(), id, turnId);
     }
 
+    /**
+     * 取消单个问答。
+     * @param id 会话 UUID
+     * @param turnId 问答 UUID
+     * @return 问答
+     */
     @PostMapping("/{id}/turns/{turnId}/cancel")
     public AiTurn cancel(@PathVariable String id, @PathVariable String turnId) {
         return replies.cancel(owner(), id, turnId);
     }
 
+    /**
+     * 删除会话。
+     * @param id 会话 UUID
+     */
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) { replies.delete(owner(), id); }
 

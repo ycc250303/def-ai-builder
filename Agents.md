@@ -83,6 +83,10 @@ Agents.md   本文件
 
 登录页提供「忘记密码」，匿名提交账号名称和新密码即可重置，无其他身份验证。密码长度为 8 到 64 位，内容不做裁剪；重置成功后删除该账号的 Redis 登录令牌。登录与重置密码在数据库事务中锁定同一用户记录，顺序完成密码校验、保存与令牌操作；删除令牌失败时回滚密码更新。每次签发 JWT 使用独立的 `jti`，重新登录不会恢复已失效令牌的效力。
 
+植物养护资料通过 `queryPlantCare` 只读工具读取 NC State 网站，直接接受俗名，仙人球按类别提供参考。`data/plant-knowledge/catalog.json` 保存九类植物的俗名、英文检索名称与首选来源路径，随后端安装包交付，不设置学名字段。已收录名称使用目录中核实的英文名称，其他名称使用 Agent 翻译。`searchTerms` 只搜索植物名称，`topics` 使用枚举参数，支持综合养护与具体主题组合，重复主题合并，额外主题的证据与缺失状态分别保留；零结果的建议列表不作为匹配。工具固定来源域名，HTTP 客户端显式直连，禁止重定向和自动重试，单页最多 2 MB、完整请求最多 10 秒、每次最多三页、结果最多 16000 UTF-8 字节；超限直接失败。来源错误终止本轮问答，缺失主题明确返回。公共资料与个人植物归属查询独立，共用每轮最多五次工具调用限制。
+
+智能问答使用一个会话业务服务管理归属、请求去重、历史与状态，工具层只适配模型调用。每个问答编号只执行一次，重复请求回放持久化结果。会话行锁与活动轮次唯一索引限制同一会话并发；回复状态和正文在同一短事务保存，只有活动状态允许写入，模型调用在事务之外执行。执行租约处理跨实例取消和进程中断，最近 N 轮已完成问答从 PostgreSQL 读取。模型名称及用量保存在助手消息的 `metadata`；表结构依次执行 V1–V4，应用启动不自动迁移。V4 与新版后端配套部署，执行前停止旧版问答写入。
+
 ### 客户端
 
 `app/` 使用 Flutter，负责展示、交互，并访问后端。
@@ -118,7 +122,7 @@ Agents.md   本文件
 
 停止容器执行 `docker compose down`。数据卷会保留。删除数据卷、发布、文件清理和生产进程操作，在用户明确授权后执行。
 
-main 分支收到涉及 `backend/` 或 `app/` 的提交时，GitHub Actions 执行 `.github/workflows/cd.yml`；本次推送中 `backend/` 的文件发生变更时构建并部署后端，`app/` 的文件发生变更时打包 Android 正式安装包。手动触发执行两个任务。流水线使用 Java 21 打包后端，通过密钥 `SSH_PRIVATE_KEY` 登录 `8.155.138.61`，把安装包放到 `/opt/plant`，再按 `deploy/backend/compose.server.yml` 构建并启动容器 `plant-backend`。同一流水线用 Flutter 3.50.0 执行 `flutter build apk --release`，后端地址为 `http://8.155.138.61:8082`，安装包关闭调试标志，产物为 Actions 工件 `app-release`，保留 30 天，并发布到 GitHub Release 列表，标签为 `apk-` 加完整提交编号，最新一条标为 Latest。容器加入已有网络 `deploy_backend`，数据库地址为 `pgsql:5432`，Redis 地址为 `redis:6379`，宿主机端口是 8082。数据库密码、Redis 密码和 `JWT_SECRET` 保存在服务器文件 `/opt/plant/.env`。该文件权限为 600，不进入仓库，后续发布保留原文件。发布脚本是 `.github/scripts/deploy_backend.sh`。本机在 `deploy/` 执行 `docker compose up --build -d` 启动本机的三个服务。服务器发布连接这台服务器上已经存在的 PostgreSQL 和 Redis。
+main 分支收到涉及 `backend/`、`data/plant-knowledge/` 或 `app/` 的提交时，GitHub Actions 执行 `.github/workflows/cd.yml`；本次推送中 `backend/` 或 `data/plant-knowledge/` 的文件发生变更时构建并部署后端，`app/` 的文件发生变更时打包 Android 正式安装包。手动触发执行两个任务。流水线使用 Java 21 打包后端，通过密钥 `SSH_PRIVATE_KEY` 登录 `8.155.138.61`，把安装包放到 `/opt/plant`，再按 `deploy/backend/compose.server.yml` 构建并启动容器 `plant-backend`。同一流水线用 Flutter 3.50.0 执行 `flutter build apk --release`，后端地址为 `http://8.155.138.61:8082`，安装包关闭调试标志，产物为 Actions 工件 `app-release`，保留 30 天，并发布到 GitHub Release 列表，标签为 `apk-` 加完整提交编号，最新一条标为 Latest。容器加入已有网络 `deploy_backend`，数据库地址为 `pgsql:5432`，Redis 地址为 `redis:6379`，宿主机端口是 8082。数据库密码、Redis 密码和 `JWT_SECRET` 保存在服务器文件 `/opt/plant/.env`。该文件权限为 600，不进入仓库，后续发布保留原文件。发布脚本是 `.github/scripts/deploy_backend.sh`。本机在 `deploy/` 执行 `docker compose up --build -d` 启动本机的三个服务。服务器发布连接这台服务器上已经存在的 PostgreSQL 和 Redis。
 
 ## Git 与文档
 

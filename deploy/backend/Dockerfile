@@ -3,6 +3,7 @@ RUN sed -i 's#https://dl-cdn.alpinelinux.org#https://mirrors.aliyun.com#g' /etc/
     && apk add --no-cache openjdk21
 WORKDIR /src
 COPY backend/ .
+COPY data/plant-knowledge/ /data/plant-knowledge/
 RUN chmod +x mvnw && ./mvnw -B -ntp -Dmaven.test.skip=true package
 
 FROM alpine:3.21

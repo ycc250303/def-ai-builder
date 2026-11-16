@@ -18,7 +18,7 @@ import com.def.plant.aiService.entity.AiTurn;
 public interface AiMapper {
     String CONVERSATION_COLUMNS = "id,scope,plant_id,title,created_at,updated_at";
     String TURN_SELECT = """
-        SELECT t.id,t.conversation_id,t.request_id,t.run_id,t.status,t.error_code,
+        SELECT t.id,t.conversation_id,t.request_id,t.status,t.error_code,
                u.content AS question,a.content,a.id AS assistant_message_id,t.sequence
         FROM ai_turns t JOIN ai_conversations c ON c.id=t.conversation_id
         JOIN ai_messages u ON u.turn_id=t.id AND u.sequence=0
@@ -55,13 +55,13 @@ public interface AiMapper {
     int activeCount(@Param("userId") long userId, @Param("id") String id);
 
     @Insert("""
-        INSERT INTO ai_turns(id,conversation_id,request_id,sequence,status,run_id,lease_until,model,prompt_version)
-        SELECT #{id},#{conversationId},#{requestId},coalesce(max(sequence),0)+1,'ACCEPTED',#{runId},
-            CURRENT_TIMESTAMP + INTERVAL '30 seconds',#{model},'plant-care-v1'
+        INSERT INTO ai_turns(id,conversation_id,request_id,sequence,status,lease_until)
+        SELECT #{id},#{conversationId},#{requestId},coalesce(max(sequence),0)+1,'ACCEPTED',
+            CURRENT_TIMESTAMP + INTERVAL '30 seconds'
         FROM ai_turns WHERE conversation_id=#{conversationId}
         """)
     void createTurn(@Param("id") String id, @Param("conversationId") String conversationId,
-            @Param("requestId") String requestId, @Param("runId") String runId, @Param("model") String model);
+            @Param("requestId") String requestId);
 
     @Insert("INSERT INTO ai_messages(id,turn_id,sequence,role,content) VALUES(#{id},#{turnId},#{sequence},#{role},#{content})")
     void createMessage(@Param("id") String id, @Param("turnId") String turnId, @Param("sequence") int sequence,
@@ -98,13 +98,13 @@ public interface AiMapper {
     @Update("""
         UPDATE ai_turns t SET lease_until=CURRENT_TIMESTAMP + INTERVAL '30 seconds'
         FROM ai_conversations c WHERE c.id=t.conversation_id AND c.user_id=#{userId}
-          AND t.id=#{id} AND t.run_id=#{runId} AND t.status IN ('ACCEPTED','STREAMING')
+          AND t.id=#{id} AND t.status IN ('ACCEPTED','STREAMING')
           AND t.lease_until >= CURRENT_TIMESTAMP
         """)
-    int renew(@Param("userId") long userId, @Param("id") String id, @Param("runId") String runId);
+    int renew(@Param("userId") long userId, @Param("id") String id);
 
     @Update("""
-        UPDATE ai_messages m SET content=#{content},metadata=CAST(#{metadata} AS jsonb),updated_at=CURRENT_TIMESTAMP
+        UPDATE ai_messages m SET content=#{content},metadata=CAST(#{metadata} AS jsonb)
         FROM ai_turns t JOIN ai_conversations c ON c.id=t.conversation_id
         WHERE m.turn_id=t.id AND m.sequence=1 AND t.id=#{id} AND c.user_id=#{userId}
         """)
@@ -115,11 +115,11 @@ public interface AiMapper {
         UPDATE ai_turns t SET status=#{status},error_code=#{errorCode},
           finished_at=CASE WHEN #{status}='STREAMING' THEN NULL ELSE CURRENT_TIMESTAMP END
         FROM ai_conversations c WHERE c.id=t.conversation_id AND c.user_id=#{userId}
-          AND t.id=#{id} AND t.run_id=#{runId} AND t.status IN ('ACCEPTED','STREAMING')
+          AND t.id=#{id} AND t.status IN ('ACCEPTED','STREAMING')
         """)
-    int transition(@Param("userId") long userId, @Param("id") String id, @Param("runId") String runId,
+    int transition(@Param("userId") long userId, @Param("id") String id,
             @Param("status") String status, @Param("errorCode") String errorCode);
 
     @Delete("DELETE FROM ai_conversations WHERE id=#{id} AND user_id=#{userId}")
-    int delete(@Param("userId") long userId, @Param("id") String id);
+    void delete(@Param("userId") long userId, @Param("id") String id);
 }

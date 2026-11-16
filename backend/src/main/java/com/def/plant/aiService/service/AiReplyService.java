@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
@@ -45,7 +46,7 @@ public class AiReplyService {
     private final PlantCareAgent agent;
     private final AiProperties properties;
     private final Semaphore capacity;
-    private final java.util.concurrent.ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor();
     private final ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
     private final Map<String, Run> runs = new ConcurrentHashMap<>();
     private final ObjectMapper json = new ObjectMapper();
@@ -69,16 +70,24 @@ public class AiReplyService {
      */
     public SseEmitter reply(long userId, String id, QuestionRequest request) {
         agent.requireConfigured();
-        if (!capacity.tryAcquire()) throw new BusinessException(ErrorCode.AI_CAPACITY_EXCEEDED);
+        if (!capacity.tryAcquire()) {
+            throw new BusinessException(ErrorCode.AI_CAPACITY_EXCEEDED);
+        }
         AiConversationService.Accepted accepted;
-        try { accepted = conversations.accept(userId, id, request); }
-        catch (RuntimeException exception) { capacity.release(); throw exception; }
+        try {
+            accepted = conversations.accept(userId, id, request);
+        } catch (RuntimeException exception) {
+            capacity.release();
+            throw exception;
+        }
         SseEmitter emitter = new SseEmitter((properties.timeoutSeconds() + 10L) * 1000);
-        Run run = new Run(userId, accepted.turn(), emitter);
-        emitter.onCompletion(() -> disconnect(run));
-        emitter.onTimeout(() -> stop(run, ErrorCode.AI_TIMEOUT, "FAILED"));
-        emitter.onError(error -> disconnect(run));
-        if (accepted.fresh()) runs.put(run.turn.id(), run);
+        Run run = new Run(userId, accepted.turn(), emitter, encode(Map.of("model", properties.model())));
+        if (accepted.fresh()) {
+            emitter.onCompletion(() -> stop(run, ErrorCode.AI_CANCELLED, "CANCELLED"));
+            emitter.onTimeout(() -> stop(run, ErrorCode.AI_TIMEOUT, "FAILED"));
+            emitter.onError(error -> stop(run, ErrorCode.AI_CANCELLED, "CANCELLED"));
+            runs.put(run.turn.id(), run);
+        }
         workers.submit(() -> execute(run, accepted.fresh()));
         return emitter;
     }
@@ -86,54 +95,41 @@ public class AiReplyService {
     private void execute(Run run, boolean fresh) {
         run.thread = Thread.currentThread();
         try {
-            if (run.stopping.get()) return;
+            if (run.stopping.get()) {
+                return;
+            }
             event(run, "accepted", Map.of("turnId", run.turn.id(), "conversationId", run.turn.conversationId(),
                     "assistantMessageId", run.turn.assistantMessageId()));
             if (!fresh) {
-                event(run, run.turn.status().equals("COMPLETED") ? "done" : "snapshot", run.turn);
+                replay(run, run.turn);
                 return;
             }
             try (var responses = agent.stream(run.userId, run.turn).toStream(1)) {
                 var iterator = responses.iterator();
                 while (iterator.hasNext()) {
-                    if (run.stopping.get()) return;
-                    ChatResponse response = iterator.next();
-                    if (response.getResult() != null) {
-                        String reason = response.getResult().getMetadata().getFinishReason();
-                        if (reason != null && !reason.isBlank()) run.finishReason = reason;
-                        String text = response.getResult().getOutput().getText();
-                        if (text != null && !text.isEmpty()) {
-                            synchronized (run) { run.text.append(text); }
-                            if (run.text.length() > 200000) throw new BusinessException(ErrorCode.AI_OUTPUT_INCOMPLETE);
-                            if (System.nanoTime() - run.lastSave > Duration.ofMillis(500).toNanos()) {
-                                if (!save(run, "STREAMING", null)) {
-                                    event(run, "snapshot", conversations.turn(run.userId, run.turn.conversationId(), run.turn.id()));
-                                    return;
-                                }
-                                run.lastSave = System.nanoTime();
-                            }
-                            event(run, "delta", Map.of("turnId", run.turn.id(), "sequence", ++run.sequence, "text", text));
-                        }
+                    if (run.stopping.get()) {
+                        return;
                     }
-                    var usage = response.getMetadata().getUsage();
-                    if (usage != null && usage.getTotalTokens() > 0) {
-                        run.metadata = encode(Map.of("model", properties.model(), "promptVersion", "plant-care-v1",
-                                "inputTokens", usage.getPromptTokens(), "outputTokens", usage.getCompletionTokens()));
+                    if (!receive(run, iterator.next())) {
+                        return;
                     }
                 }
             }
-            if (run.stopping.get()) return;
+            if (run.stopping.get()) {
+                return;
+            }
             if (!"stop".equalsIgnoreCase(run.finishReason) || run.text.isEmpty()) {
                 throw new BusinessException(ErrorCode.AI_OUTPUT_INCOMPLETE);
             }
             if (save(run, "COMPLETED", null)) {
                 event(run, "done", Map.of("turnId", run.turn.id(), "status", "COMPLETED", "content", run.content()));
             } else {
-                event(run, "snapshot", conversations.turn(run.userId, run.turn.conversationId(), run.turn.id()));
+                replay(run, conversations.turn(run.userId, run.turn.conversationId(), run.turn.id()));
             }
-        }
-        catch (Exception exception) {
-            if (!run.stopping.get()) {
+        } catch (Exception exception) {
+            if (!fresh) {
+                run.emitter.completeWithError(exception);
+            } else if (!run.stopping.get()) {
                 ErrorCode code = classify(exception, run.turn.id());
                 if (code == null) {
                     log.error("问答执行缺陷: turnId={}", run.turn.id(), exception);
@@ -143,8 +139,7 @@ public class AiReplyService {
                     fail(run, code.code(), code.detail());
                 }
             }
-        }
-        finally {
+        } finally {
             run.finished.set(true);
             runs.remove(run.turn.id(), run);
             capacity.release();
@@ -152,27 +147,71 @@ public class AiReplyService {
         }
     }
 
+    /** 接收一个模型片段，累计正文、定期保存进度，并记录供应商用量。 */
+    private boolean receive(Run run, ChatResponse response) throws IOException {
+        // 用量帧可以只有 metadata，没有文本候选。
+        var result = response.getResult();
+        if (result != null) {
+            String reason = result.getMetadata().getFinishReason();
+            if (reason != null && !reason.isBlank()) {
+                run.finishReason = reason;
+            }
+            String text = result.getOutput().getText();
+            if (text != null && !text.isEmpty()) {
+                run.append(text);
+                if (System.nanoTime() - run.lastSave > Duration.ofMillis(500).toNanos()) {
+                    if (!save(run, "STREAMING", null)) {
+                        replay(run, conversations.turn(run.userId, run.turn.conversationId(), run.turn.id()));
+                        return false;
+                    }
+                    run.lastSave = System.nanoTime();
+                }
+                event(run, "delta", Map.of("turnId", run.turn.id(), "sequence", ++run.sequence, "text", text));
+            }
+        }
+        var usage = response.getMetadata().getUsage();
+        if (usage != null && usage.getTotalTokens() > 0) {
+            run.metadata = encode(Map.of("model", properties.model(),
+                    "inputTokens", usage.getPromptTokens(), "outputTokens", usage.getCompletionTokens()));
+        }
+        return true;
+    }
+
+    private void replay(Run run, AiTurn saved) throws IOException {
+        event(run, saved.status().equals("COMPLETED") ? "done" : "snapshot", saved);
+    }
+
     /** 按异常原因识别上游拒绝，日志只记录状态与执行编号，不转发任意上游正文。 */
     private ErrorCode classify(Exception exception, String turnId) {
         boolean upstream = false;
         for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
-            if (cause instanceof BusinessException business) return business.errorCode();
-            if (cause instanceof DataAccessException) return ErrorCode.DATA_STORE_UNAVAILABLE;
-            if (cause instanceof TimeoutException || cause instanceof java.io.InterruptedIOException) return ErrorCode.AI_TIMEOUT;
+            if (cause instanceof BusinessException business) {
+                return business.errorCode();
+            }
+            if (cause instanceof DataAccessException) {
+                return ErrorCode.DATA_STORE_UNAVAILABLE;
+            }
+            if (cause instanceof TimeoutException || cause instanceof java.io.InterruptedIOException) {
+                return ErrorCode.AI_TIMEOUT;
+            }
             if (cause instanceof OpenAIServiceException response) {
                 log.warn("模型服务响应异常: turnId={}, status={}", turnId, response.statusCode());
             }
-            if (cause instanceof OpenAIException || cause instanceof IOException) upstream = true;
+            if (cause instanceof OpenAIException || cause instanceof IOException) {
+                upstream = true;
+            }
         }
         return upstream ? ErrorCode.AI_UPSTREAM_FAILED : null;
     }
 
     private void fail(Run run, String code, String detail) {
         try {
-            save(run, "FAILED", code);
-            event(run, "error", Map.of("turnId", run.turn.id(), "code", code, "detail", detail, "content", run.content()));
-        }
-        catch (Exception persistenceOrTransportError) {
+            if (save(run, "FAILED", code)) {
+                event(run, "error", Map.of("turnId", run.turn.id(), "code", code, "detail", detail, "content", run.content()));
+            } else {
+                replay(run, conversations.turn(run.userId, run.turn.conversationId(), run.turn.id()));
+            }
+        } catch (Exception persistenceOrTransportError) {
             log.error("问答失败状态或事件无法保存: turnId={}", run.turn.id(), persistenceOrTransportError);
             run.emitter.completeWithError(persistenceOrTransportError);
         }
@@ -184,18 +223,24 @@ public class AiReplyService {
 
     private void event(Run run, String name, Object data) throws IOException {
         synchronized (run.outputLock) {
-            if (run.terminalSent) return;
-            if (name.equals("done") || name.equals("error") || name.equals("snapshot")) run.terminalSent = true;
+            if (run.terminalSent) {
+                return;
+            }
+            if (name.equals("done") || name.equals("error") || name.equals("snapshot")) {
+                run.terminalSent = true;
+            }
             run.emitter.send(SseEmitter.event().name(name).data(data, MediaType.APPLICATION_JSON));
         }
     }
 
     /** 显式取消先持久化终态，再终止当前实例上的上游订阅。 */
     public AiTurn cancel(long userId, String id, String turnId) {
-        AiTurn current = conversations.turn(userId, id, turnId);
+        AiTurn saved = conversations.cancel(userId, id, turnId);
         Run run = runs.get(turnId);
-        if (run != null && current.active()) stop(run, ErrorCode.AI_CANCELLED, "CANCELLED");
-        return conversations.cancel(userId, id, turnId);
+        if (run != null) {
+            stop(run, ErrorCode.AI_CANCELLED, "CANCELLED");
+        }
+        return saved;
     }
 
     public void delete(long userId, String id) {
@@ -204,31 +249,31 @@ public class AiReplyService {
                 .forEach(run -> stop(run, ErrorCode.AI_CANCELLED, "CANCELLED"));
     }
 
-    private void disconnect(Run run) {
-        if (!run.finished.get()) stop(run, ErrorCode.AI_CANCELLED, "CANCELLED");
-    }
-
     private void stop(Run run, ErrorCode code, String status) {
-        if (run.finished.get() || !run.stopping.compareAndSet(false, true)) return;
+        if (run.finished.get() || !run.stopping.compareAndSet(false, true)) {
+            return;
+        }
         try {
             if (save(run, status, code.code())) {
                 event(run, "error", Map.of("turnId", run.turn.id(), "code", code.code(), "detail", code.detail()));
             } else {
                 try {
                     AiTurn current = conversations.turn(run.userId, run.turn.conversationId(), run.turn.id());
-                    event(run, current.status().equals("COMPLETED") ? "done" : "snapshot", current);
+                    replay(run, current);
                 } catch (BusinessException deleted) {
-                    if (deleted.errorCode() != ErrorCode.AI_CONVERSATION_NOT_FOUND) throw deleted;
+                    if (deleted.errorCode() != ErrorCode.AI_CONVERSATION_NOT_FOUND) {
+                        throw deleted;
+                    }
                     event(run, "error", Map.of("turnId", run.turn.id(), "code", code.code(), "detail", code.detail()));
                 }
             }
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             run.emitter.completeWithError(exception);
-        }
-        finally {
+        } finally {
             Thread thread = run.thread;
-            if (thread != null && thread != Thread.currentThread()) thread.interrupt();
+            if (thread != null && thread != Thread.currentThread()) {
+                thread.interrupt();
+            }
         }
     }
 
@@ -237,24 +282,39 @@ public class AiReplyService {
             try {
                 if (System.nanoTime() - run.started > Duration.ofSeconds(properties.timeoutSeconds()).toNanos()) {
                     stop(run, ErrorCode.AI_TIMEOUT, "FAILED");
-                } else if (mapper.renew(run.userId, run.turn.id(), run.turn.runId()) == 0) {
+                } else if (mapper.renew(run.userId, run.turn.id()) == 0) {
                     stop(run, ErrorCode.AI_CANCELLED, "CANCELLED");
                 } else {
                     synchronized (run.outputLock) {
-                        if (!run.terminalSent) run.emitter.send(SseEmitter.event().comment("heartbeat"));
+                        if (!run.terminalSent) {
+                            run.emitter.send(SseEmitter.event().comment("heartbeat"));
+                        }
                     }
                 }
-            }
-            catch (Exception exception) {
-                boolean storage = exception instanceof DataAccessException;
-                stop(run, storage ? ErrorCode.DATA_STORE_UNAVAILABLE : ErrorCode.AI_CANCELLED, storage ? "FAILED" : "CANCELLED");
+            } catch (DataAccessException exception) {
+                log.error("问答租约续期失败: turnId={}", run.turn.id(), exception);
+                stop(run, ErrorCode.DATA_STORE_UNAVAILABLE, "FAILED");
+            } catch (IOException exception) {
+                stop(run, ErrorCode.AI_CANCELLED, "CANCELLED");
+            } catch (RuntimeException exception) {
+                log.error("问答心跳执行缺陷: turnId={}", run.turn.id(), exception);
+                if (run.stopping.compareAndSet(false, true)) {
+                    fail(run, "AI_INTERNAL_ERROR", "回复生成出现内部错误");
+                    Thread thread = run.thread;
+                    if (thread != null) {
+                        thread.interrupt();
+                    }
+                }
             }
         }
     }
 
     private String encode(Object data) {
-        try { return json.writeValueAsString(data); }
-        catch (JsonProcessingException exception) { throw new IllegalStateException("问答元数据序列化失败", exception); }
+        try {
+            return json.writeValueAsString(data);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("问答元数据序列化失败", exception);
+        }
     }
 
     @PreDestroy
@@ -275,13 +335,23 @@ public class AiReplyService {
         final AtomicBoolean stopping = new AtomicBoolean();
         final long started = System.nanoTime();
         volatile Thread thread;
-        volatile String metadata = "{}";
+        volatile String metadata;
         long lastSave;
         int sequence;
         String finishReason;
-        Run(long userId, AiTurn turn, SseEmitter emitter) {
-            this.userId = userId; this.turn = turn; this.emitter = emitter;
+        Run(long userId, AiTurn turn, SseEmitter emitter, String metadata) {
+            this.userId = userId;
+            this.turn = turn;
+            this.emitter = emitter;
+            this.metadata = metadata;
         }
-        synchronized String content() { return text.toString(); }
+
+        synchronized void append(String fragment) {
+            text.append(fragment);
+        }
+
+        synchronized String content() {
+            return text.toString();
+        }
     }
 }
