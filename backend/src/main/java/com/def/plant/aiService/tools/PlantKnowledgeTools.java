@@ -27,10 +27,14 @@ public class PlantKnowledgeTools {
      */
     @Tool(description = "查询NC State权威植物养护资料。直接使用中文俗名，无需细分物种。"
             + "先把俗名翻译成英文常用植物名称，名称和主题分别传入。返回英文证据，请据此翻译回答并引用实际来源。"
+            + "返回结果中scope为CATEGORY_REFERENCE表示类别参考；status为NOT_FOUND表示未查到资料；"
+            + "topicsWithoutExplicitEvidence列出缺少明确证据的主题。"
             + "支持绿萝、龟背竹、吊兰、虎皮兰、金钱树、玉树、芦荟、橡皮树、仙人球，也可搜索其他俗名。")
     public PlantCareResult queryPlantCare(
-            @ToolParam(description = "用户使用的植物俗名，1到100字符，如仙人球、绿箩") String plantName,
-            @ToolParam(description = "1到3个英文植物名称，每项2到80字符，如ball cactus、ZZ plant；不拼接养护问题") List<String> searchTerms,
+            @ToolParam(description = "用户使用的植物俗名，1到100字符，如仙人球、绿萝") String plantName,
+            @ToolParam(description = "将植物俗名翻译为1到3个英文常用植物名称，每项2到80字符；只填写植物名称，不拼接watering等养护主题或问题。"
+                    + "名称参考：绿萝golden pothos；龟背竹Swiss cheese plant；吊兰spider plant；虎皮兰snake plant；"
+                    + "金钱树ZZ plant；玉树jade plant；芦荟aloe vera；橡皮树rubber plant；仙人球ball cactus") List<String> searchTerms,
             @ToolParam(required = false, description = "最多6项养护主题。省略为GENERAL_CARE（介绍、光照、浇水和基质），可与具体主题组合，重复主题合并") List<CareTopic> topics,
             @ToolParam(required = false, description = "当前问题摘要，最多500字符，用于证据排序；无需传完整对话") String question) {
         return service.query(plantName, searchTerms,

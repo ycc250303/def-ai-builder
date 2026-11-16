@@ -25,8 +25,8 @@ public class PlantTools {
      * @param context 服务端校验过的用户身份
      * @return 最多 20 株植物的档案
      */
-    @Tool(description = "查询主人自己的植物列表，每次最多20株，offset从0开始")
-    public List<PlantResponse> listPlants(@ToolParam(description = "从0开始的偏移") int offset, ToolContext context) {
+    @Tool(description = "只读查询当前用户的植物列表，每次最多返回20株植物档案")
+    public List<PlantResponse> listPlants(@ToolParam(description = "从0开始的偏移，取值0到10000") int offset, ToolContext context) {
         return conversations.listPlants(owner(context), offset);
     }
 
@@ -38,7 +38,8 @@ public class PlantTools {
      * @throws BusinessException 植物不存在或不属于当前账号
      */
     @Tool(description = "查询主人指定植物的档案，品种为用户填写，当前尚无环境监测数据")
-    public PlantResponse getPlant(long plantId, ToolContext context) {
+    public PlantResponse getPlant(@ToolParam(description = "当前用户的植物编号，取自植物列表或当前会话的植物档案") long plantId,
+            ToolContext context) {
         return conversations.getPlant(owner(context), plantId);
     }
 

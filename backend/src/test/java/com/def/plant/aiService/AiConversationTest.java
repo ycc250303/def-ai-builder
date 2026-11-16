@@ -314,6 +314,17 @@ class AiConversationTest {
         long own=body(send("/plants","POST","{\"species\":\"吊兰\"}",token)).path("id").asLong();
         assertThat(send(path(id),"POST",question("TOOL:"+own),token).body()).contains("event:done");
         assertThat(lastRequest().path("messages").toString()).contains("tool","吊兰");
+        for (JsonNode tool : lastRequest().path("tools")) {
+            JsonNode function = tool.path("function");
+            JsonNode parameters = function.path("parameters").path("properties");
+            assertThat(parameters.has("context")).isFalse();
+            if (function.path("name").asText().equals("listPlants")) {
+                assertThat(parameters.path("offset").path("description").asText()).contains("0到10000");
+            }
+            if (function.path("name").asText().equals("getPlant")) {
+                assertThat(parameters.path("plantId").path("description").asText()).contains("当前用户", "植物编号");
+            }
+        }
         String other=login("ai_tool_other");
         String privateNickname = "私有植物-" + UUID.randomUUID();
         long otherPlant=body(send("/plants","POST",JSON.writeValueAsString(Map.of("species", "龟背竹", "nickname", privateNickname)),other)).path("id").asLong();
@@ -340,6 +351,13 @@ class AiConversationTest {
             if (tool.path("function").path("name").asText().equals("queryPlantCare")) function = tool.path("function");
         }
         assertThat(function).isNotNull();
+        assertThat(function.path("description").asText())
+                .contains("CATEGORY_REFERENCE", "NOT_FOUND", "topicsWithoutExplicitEvidence");
+        JsonNode parameters = function.path("parameters").path("properties");
+        assertThat(parameters.path("searchTerms").path("description").asText())
+                .contains("1到3个", "2到80字符", "watering", "仙人球ball cactus", "绿萝golden pothos");
+        assertThat(parameters.path("topics").path("description").asText()).contains("最多6项", "GENERAL_CARE");
+        assertThat(parameters.path("question").path("description").asText()).contains("最多500字符");
         assertThat(function.path("parameters").path("required").toString()).contains("plantName", "searchTerms")
                 .doesNotContain("topics", "question");
         JsonNode topicValues = function.path("parameters").path("properties").path("topics").path("items").path("enum");
