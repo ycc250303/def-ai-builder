@@ -1,0 +1,17 @@
+newmtl blue
+Kd 0.22 0.45 0.92
+
+newmtl orange
+Kd 0.96 0.48 0.20
+
+newmtl green
+Kd 0.18 0.72 0.51
+
+newmtl purple
+Kd 0.56 0.36 0.88
+
+newmtl yellow
+Kd 0.98 0.76 0.22
+
+newmtl pink
+Kd 0.90 0.32 0.52
