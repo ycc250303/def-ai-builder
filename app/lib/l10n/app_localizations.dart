@@ -1316,6 +1316,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pan or zoom the map, then switch to arranging items in that area.'**
   String get browseHint;
+
+  /// No description provided for @gameData.
+  ///
+  /// In en, this message translates to:
+  /// **'Game data'**
+  String get gameData;
+
+  /// No description provided for @hardwareData.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardware data'**
+  String get hardwareData;
+
+  /// No description provided for @showGameData.
+  ///
+  /// In en, this message translates to:
+  /// **'Show game data'**
+  String get showGameData;
+
+  /// No description provided for @showHardwareData.
+  ///
+  /// In en, this message translates to:
+  /// **'Show hardware data'**
+  String get showHardwareData;
+
+  /// No description provided for @deviceAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Device address'**
+  String get deviceAddress;
+
+  /// No description provided for @deviceAddressInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a local HTTP address, e.g. http://192.168.4.1'**
+  String get deviceAddressInvalid;
+
+  /// No description provided for @deviceConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect / Reconnect'**
+  String get deviceConnect;
+
+  /// No description provided for @deviceWifiHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the device’s PlantMate Wi-Fi network and stay connected to read data. For desktop testing, enter the computer’s LAN address and port.'**
+  String get deviceWifiHelp;
+
+  /// No description provided for @devicePaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Data reading paused'**
+  String get devicePaused;
+
+  /// No description provided for @deviceConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to device…'**
+  String get deviceConnecting;
+
+  /// No description provided for @deviceReceiving.
+  ///
+  /// In en, this message translates to:
+  /// **'Receiving data'**
+  String get deviceReceiving;
+
+  /// No description provided for @deviceStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample sequence unchanged for over 5 seconds; readings are stale'**
+  String get deviceStale;
+
+  /// No description provided for @deviceConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed. Check Wi-Fi, the device address and local network permission, then reconnect.'**
+  String get deviceConnectionFailed;
+
+  /// No description provided for @deviceProtocolInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid device data; reading stopped'**
+  String get deviceProtocolInvalid;
+
+  /// No description provided for @deviceSensorUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor data unavailable'**
+  String get deviceSensorUnavailable;
+
+  /// No description provided for @deviceSourceHardware.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: hardware device'**
+  String get deviceSourceHardware;
+
+  /// No description provided for @deviceSourceSimulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: desktop simulation'**
+  String get deviceSourceSimulation;
+
+  /// No description provided for @deviceSequence.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample sequence: {sequence}'**
+  String deviceSequence(int sequence);
+
+  /// No description provided for @deviceSoilContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Soil contact'**
+  String get deviceSoilContact;
+
+  /// No description provided for @deviceSoilHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Open / HIGH'**
+  String get deviceSoilHigh;
+
+  /// No description provided for @deviceSoilLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed / LOW'**
+  String get deviceSoilLow;
+
+  /// No description provided for @deviceSoilHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The soil contact is a threshold switch. Its dry/wet meaning requires physical calibration.'**
+  String get deviceSoilHelp;
+
+  /// No description provided for @deviceTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch electrodes'**
+  String get deviceTouch;
+
+  /// No description provided for @deviceTouchIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'No touch detected'**
+  String get deviceTouchIdle;
+
+  /// No description provided for @deviceLatestEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest device event'**
+  String get deviceLatestEvent;
 }
 
 class _AppLocalizationsDelegate

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 设备热点与电脑联调使用本地 HTTP，客户端限定局域网地址并禁止重定向。 -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

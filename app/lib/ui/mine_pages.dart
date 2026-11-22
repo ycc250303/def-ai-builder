@@ -3,8 +3,10 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 
 import '../data/models.dart';
+import '../data/device_client.dart';
 import 'common.dart';
 import 'home_page.dart';
+import 'pet_data_panel.dart';
 import 'social_pages.dart';
 
 class MinePage extends StatelessWidget {
@@ -559,8 +561,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
 }
 
 class PetPage extends StatefulWidget {
-  const PetPage({super.key, required this.id});
+  const PetPage({super.key, required this.id, this.createDeviceClient});
   final String id;
+  final DeviceClient Function()? createDeviceClient;
   @override
   State<PetPage> createState() => _PetPageState();
 }
@@ -618,11 +621,11 @@ class _PetPageState extends State<PetPage> {
               style: const TextStyle(color: muted),
             ),
             const SizedBox(height: 18),
-            StatsGrid(pet: g.pet),
-            SectionLabel(context.l.xp),
-            Text('${g.pet.xp % 100} / 100 · ${g.pet.xp} XP'),
-            const SizedBox(height: 8),
-            PixelProgress(value: (g.pet.xp % 100) / 100),
+            PetDataPanel(
+              key: ValueKey(g.id),
+              pet: g.pet,
+              createDeviceClient: widget.createDeviceClient,
+            ),
             SectionLabel(context.l.trait),
             Text(context.l.traitNote),
             const SizedBox(height: 18),

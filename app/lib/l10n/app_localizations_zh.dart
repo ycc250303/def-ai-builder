@@ -619,4 +619,82 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get browseHint => '拖动或缩放地图，到达目标区域后切换到调整装饰。';
+
+  @override
+  String get gameData => '游戏数据';
+
+  @override
+  String get hardwareData => '硬件数据';
+
+  @override
+  String get showGameData => '切换为游戏数据';
+
+  @override
+  String get showHardwareData => '切换为硬件数据';
+
+  @override
+  String get deviceAddress => '设备地址';
+
+  @override
+  String get deviceAddressInvalid => '请输入局域网 HTTP 地址，例如 http://192.168.4.1';
+
+  @override
+  String get deviceConnect => '连接 / 重新连接';
+
+  @override
+  String get deviceWifiHelp =>
+      '连接设备的 PlantMate Wi-Fi 热点并保持连接，然后读取数据。电脑联调时填写电脑的局域网地址和端口。';
+
+  @override
+  String get devicePaused => '数据读取已暂停';
+
+  @override
+  String get deviceConnecting => '正在连接设备…';
+
+  @override
+  String get deviceReceiving => '正在接收数据';
+
+  @override
+  String get deviceStale => '采样序号已超过 5 秒未更新，当前读数已过期';
+
+  @override
+  String get deviceConnectionFailed => '连接失败，请检查 Wi-Fi、设备地址与本地网络权限后重新连接';
+
+  @override
+  String get deviceProtocolInvalid => '设备数据格式错误，读取已停止';
+
+  @override
+  String get deviceSensorUnavailable => '传感器暂无数据';
+
+  @override
+  String get deviceSourceHardware => '数据来源：硬件设备';
+
+  @override
+  String get deviceSourceSimulation => '数据来源：电脑模拟服务';
+
+  @override
+  String deviceSequence(int sequence) {
+    return '采样序号：$sequence';
+  }
+
+  @override
+  String get deviceSoilContact => '土壤触点';
+
+  @override
+  String get deviceSoilHigh => '开路 / HIGH';
+
+  @override
+  String get deviceSoilLow => '闭合 / LOW';
+
+  @override
+  String get deviceSoilHelp => '土壤触点表示阈值开关状态，干湿含义需要实物校准。';
+
+  @override
+  String get deviceTouch => '触摸电极';
+
+  @override
+  String get deviceTouchIdle => '未检测到触摸';
+
+  @override
+  String get deviceLatestEvent => '最近设备事件';
 }

@@ -631,4 +631,86 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get browseHint =>
       'Pan or zoom the map, then switch to arranging items in that area.';
+
+  @override
+  String get gameData => 'Game data';
+
+  @override
+  String get hardwareData => 'Hardware data';
+
+  @override
+  String get showGameData => 'Show game data';
+
+  @override
+  String get showHardwareData => 'Show hardware data';
+
+  @override
+  String get deviceAddress => 'Device address';
+
+  @override
+  String get deviceAddressInvalid =>
+      'Enter a local HTTP address, e.g. http://192.168.4.1';
+
+  @override
+  String get deviceConnect => 'Connect / Reconnect';
+
+  @override
+  String get deviceWifiHelp =>
+      'Join the device’s PlantMate Wi-Fi network and stay connected to read data. For desktop testing, enter the computer’s LAN address and port.';
+
+  @override
+  String get devicePaused => 'Data reading paused';
+
+  @override
+  String get deviceConnecting => 'Connecting to device…';
+
+  @override
+  String get deviceReceiving => 'Receiving data';
+
+  @override
+  String get deviceStale =>
+      'Sample sequence unchanged for over 5 seconds; readings are stale';
+
+  @override
+  String get deviceConnectionFailed =>
+      'Connection failed. Check Wi-Fi, the device address and local network permission, then reconnect.';
+
+  @override
+  String get deviceProtocolInvalid => 'Invalid device data; reading stopped';
+
+  @override
+  String get deviceSensorUnavailable => 'Sensor data unavailable';
+
+  @override
+  String get deviceSourceHardware => 'Source: hardware device';
+
+  @override
+  String get deviceSourceSimulation => 'Source: desktop simulation';
+
+  @override
+  String deviceSequence(int sequence) {
+    return 'Sample sequence: $sequence';
+  }
+
+  @override
+  String get deviceSoilContact => 'Soil contact';
+
+  @override
+  String get deviceSoilHigh => 'Open / HIGH';
+
+  @override
+  String get deviceSoilLow => 'Closed / LOW';
+
+  @override
+  String get deviceSoilHelp =>
+      'The soil contact is a threshold switch. Its dry/wet meaning requires physical calibration.';
+
+  @override
+  String get deviceTouch => 'Touch electrodes';
+
+  @override
+  String get deviceTouchIdle => 'No touch detected';
+
+  @override
+  String get deviceLatestEvent => 'Latest device event';
 }

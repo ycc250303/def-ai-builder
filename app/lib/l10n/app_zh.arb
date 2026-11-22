@@ -202,5 +202,37 @@
   "recordSaved": "记录已保存",
   "browseMap": "浏览地图",
   "adjustDecorations": "调整装饰",
-  "browseHint": "拖动或缩放地图，到达目标区域后切换到调整装饰。"
+  "browseHint": "拖动或缩放地图，到达目标区域后切换到调整装饰。",
+  "gameData": "游戏数据",
+  "hardwareData": "硬件数据",
+  "showGameData": "切换为游戏数据",
+  "showHardwareData": "切换为硬件数据",
+  "deviceAddress": "设备地址",
+  "deviceAddressInvalid": "请输入局域网 HTTP 地址，例如 http://192.168.4.1",
+  "deviceConnect": "连接 / 重新连接",
+  "deviceWifiHelp": "连接设备的 PlantMate Wi-Fi 热点并保持连接，然后读取数据。电脑联调时填写电脑的局域网地址和端口。",
+  "devicePaused": "数据读取已暂停",
+  "deviceConnecting": "正在连接设备…",
+  "deviceReceiving": "正在接收数据",
+  "deviceStale": "采样序号已超过 5 秒未更新，当前读数已过期",
+  "deviceConnectionFailed": "连接失败，请检查 Wi-Fi、设备地址与本地网络权限后重新连接",
+  "deviceProtocolInvalid": "设备数据格式错误，读取已停止",
+  "deviceSensorUnavailable": "传感器暂无数据",
+  "deviceSourceHardware": "数据来源：硬件设备",
+  "deviceSourceSimulation": "数据来源：电脑模拟服务",
+  "deviceSequence": "采样序号：{sequence}",
+  "deviceSoilContact": "土壤触点",
+  "deviceSoilHigh": "开路 / HIGH",
+  "deviceSoilLow": "闭合 / LOW",
+  "deviceSoilHelp": "土壤触点表示阈值开关状态，干湿含义需要实物校准。",
+  "deviceTouch": "触摸电极",
+  "deviceTouchIdle": "未检测到触摸",
+  "deviceLatestEvent": "最近设备事件",
+  "@deviceSequence": {
+    "placeholders": {
+      "sequence": {
+        "type": "int"
+      }
+    }
+  }
 }
