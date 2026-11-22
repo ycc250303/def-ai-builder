@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "asset": "pets/baybi.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/baybi.png",
+      "sha256": "8fb6df46bdfae911d2f47c78adc8cf6256ebf1d2b35e176cffeb5cf1adc298a8"
+    },
+    {
+      "asset": "decorations/bridge_top.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/bridge_top.png",
+      "sha256": "248fe7aeecdfaa5c0bf9f90f859d4888540fc27a34213da281e34e9f6aa2896b"
+    },
+    {
+      "asset": "effects/bubble_cluster.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/bubble_cluster.png",
+      "sha256": "f6767d7b992a7f46b48ba5ba52ebb6a2e242175850da31e218f0bcf3bc6a6976"
+    },
+    {
+      "asset": "decorations/dog_left.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/dog_left.png",
+      "sha256": "2dbf88bd2ac38741dcedb3bcea837c6f8150cebe46545ad3241d5101a725a5c7"
+    },
+    {
+      "asset": "pets/eggie.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/eggie.png",
+      "sha256": "19748e5802a0f17369d2981f2bcec54a8cfb08a04bf48025d71d22d15e6dc35a"
+    },
+    {
+      "asset": "pets/eggie_avatar.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/eggie_avatar.png",
+      "sha256": "97191e168fac766b3687efc3b62f2961cf95a476477255f32a681fd7d02caee4"
+    },
+    {
+      "asset": "decorations/exploration_mushroom.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/exploration_mushroom.png",
+      "sha256": "81f34aecef8b6f61b3f4331f08cd4cc4cbab1a98e501986d9298e042580dbb35"
+    },
+    {
+      "asset": "effects/eyemask_original_cutout.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/eyemask_original_cutout.png",
+      "sha256": "2ab50012a54c90deb7fd7f50ed7dfdcb18c8a1bb3c549557b4219d4da1ec8dbf"
+    },
+    {
+      "asset": "decorations/fence_lower_1.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/fence_lower_1.png",
+      "sha256": "d9147958d4a283473839bcd9623a2e918d4a538cf5a019628aa38b6841b11a66"
+    },
+    {
+      "asset": "decorations/flower_cluster_01.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/flower_cluster_01.png",
+      "sha256": "49d845d873c0af1a3a85f57bdef65552dd8c8122dd90aa34b73e6d0c8d603ec3"
+    },
+    {
+      "asset": "effects/food_fried_egg.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/food_fried_egg.png",
+      "sha256": "3a35ef28b67724651a57e51b988a9dc8f4b5474fcd8abeb0b7249122dfd01e93"
+    },
+    {
+      "asset": "decorations/stalk_top.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/stalk_top.png",
+      "sha256": "64399c01a5dca9d0946103ded96e8f50949f9e1860355859e4c6867f6517109f"
+    },
+    {
+      "asset": "decorations/stones_top.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/stones_top.png",
+      "sha256": "2f91572ea41605e6461394acd2c19c3f9ffce9539631d3dbf1b8f943107c169e"
+    },
+    {
+      "asset": "decorations/swirl_upper.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/swirl_upper.png",
+      "sha256": "f18eb9b9c114a207461c4bc789151909004bb8c5121dd9e4742a37b8778cb74f"
+    },
+    {
+      "asset": "characters/tuantuan.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/tuantuan.png",
+      "sha256": "9cfe1848d2bd3353046befef952f1507318f899592eab6ead4a828fcec764bb7"
+    },
+    {
+      "asset": "decorations/ufo_top_left.png",
+      "source": "assets/PlantMate/原始素材/V12_Garden_全部PNG/png/ufo_top_left.png",
+      "sha256": "71df9dbe6422e26726d958054a5abe9d8b9cd81bb22192a11cbeafa53e9ecc52"
+    },
+    {
+      "asset": "pets/mature_1.png",
+      "source": "assets/PlantMate/网页/assets/shared/5e460636b97fd8.svg",
+      "sha256": "7b9829bfd3fb8de650c51e2fc52d9ed606af04b07c3f5da8810310d61ae6195b"
+    },
+    {
+      "asset": "pets/mature_2.png",
+      "source": "assets/PlantMate/网页/assets/shared/2bb819d5e33e6e.svg",
+      "sha256": "0704187c2f5581c8a6ea536b1f6e4dfc6e0d40debe2d4d9e4a0c203f9bc3deb7"
+    },
+    {
+      "asset": "pets/mature_3.png",
+      "source": "assets/PlantMate/网页/assets/shared/03477dbf736955.svg",
+      "sha256": "6bd6c72afd46590a87a9dcf4807c6814174a90320fafd15f2db5f3cf5abebc00"
+    },
+    {
+      "asset": "pets/mature_4.png",
+      "source": "assets/PlantMate/网页/assets/shared/c72969bab82154.svg",
+      "sha256": "92023e8825293f47b58e6038d73fc153dc19e5364b34ee643f1c3e6d694210ac"
+    },
+    {
+      "asset": "pets/mature_5.png",
+      "source": "assets/PlantMate/网页/assets/shared/88e687410f81f2.svg",
+      "sha256": "bbe71dda18b0ec317a449c23b6f0cb2cc87c35483c8b2f61ca1aed6d2ef5d282"
+    },
+    {
+      "asset": "pets/mature_6.png",
+      "source": "assets/PlantMate/网页/assets/shared/bb7b8726e29a55.svg",
+      "sha256": "5534a1945c8ff8af0c9ce4aff16b7444fbedc03f9f36b585397f3343e7abc944"
+    },
+    {
+      "asset": "pets/mature_7.png",
+      "source": "assets/PlantMate/网页/assets/shared/f8e8a224deafd4.svg",
+      "sha256": "3474251e79d22ce5272882bcc86bfe589c0e7f58156190835d49ae59d2355619"
+    },
+    {
+      "asset": "pets/fixed.png",
+      "source": "assets/PlantMate/网页/assets/shared/c48abdf2a8df49.svg",
+      "sha256": "5935859ed7f5f35356af6373ce47dd2aa6f0ec17c72a5f93d4ba04db12cba1b4"
+    },
+    {
+      "asset": "map/layout.json",
+      "source": "assets/PlantMate/原始素材/V12_原始开发源码_可单独运行/PlantMate_V12_Development.html",
+      "sha256": "5d74d003e29a0d950a207a77c83b223769aa42cd9841a02fc264fb9574070df0"
+    }
+  ]
+}

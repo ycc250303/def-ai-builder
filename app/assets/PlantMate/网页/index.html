@@ -1,0 +1,10 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><title>Plant Mate · V12 Garden + Social + Me</title><style>
+*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}body{display:grid;place-items:center;background:#e4e9e6;font-family:Arial,sans-serif}.app{position:relative;width:390px;height:844px;background:white;box-shadow:0 12px 45px #1936292a;overflow:hidden}iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:white;overflow:hidden;transition:opacity 100ms linear}#pm-garden{z-index:5;opacity:1;pointer-events:auto}#pm-social,#pm-me{z-index:1;opacity:0;pointer-events:none}@media(max-width:480px){body{display:block}.app{width:100vw;height:100dvh;box-shadow:none}}</style></head><body><main class="app" aria-label="Plant Mate three-tab demo">
+<iframe id="pm-garden" title="Garden V12 — unmodified" loading="eager" aria-hidden="false" allow="clipboard-write"></iframe>
+<iframe id="pm-social" title="Social — V12 synchronized" loading="eager" aria-hidden="true"></iframe>
+<iframe id="pm-me" title="Me — V12 synchronized" loading="eager" aria-hidden="true"></iframe>
+</main><script src="assets_shared.js"></script><script src="assets_shared.js"></script><script src="assets_shared.js"></script><script src="bridge.js"></script><script>
+document.getElementById('pm-garden').src='pages/01_Garden_V12_original.html';
+document.getElementById('pm-social').src='pages/02_Social_V4_integrated.html';
+document.getElementById('pm-me').src='pages/03_Me_V3_integrated.html';
+</script></body></html>

@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Plant Mate | Layered Pixel Garden</title>
+<style>
+:root { --ink:#17191a; --muted:#626a64; --pink:#F3BAC8; --green:#BFDDA9; --green-deep:#9DD471; --sky:#A7D7E8; --blue:#A7D7E8; --yellow:#FAE082; --white:#fff; }
+*{box-sizing:border-box}html,body{padding:0;margin:0;min-height:100%;background:#e9e9e9;color:var(--ink)}
+body{font-family:"Courier New",Courier,monospace;font-size:12px;font-weight:700;display:grid;place-items:center;-webkit-font-smoothing:none}
+button,input{font:inherit}button{border:0;color:inherit;cursor:pointer;background:none;-webkit-tap-highlight-color:transparent}button:focus-visible{outline:2px solid #468a46;outline-offset:3px}
+.phone{width:min(390px,100vw);height:min(844px,100dvh);min-height:590px;display:grid;grid-template-rows:28px 69px minmax(238px,1fr) 219px 62px;background:white;overflow:hidden;position:relative;box-shadow:0 12px 46px #0002}
+.statusbar{padding:8px 17px 0;display:flex;align-items:flex-start;justify-content:space-between;font:700 12px/1 "Courier New",monospace}
+.status-symbols{letter-spacing:1px;font-size:11px}
+.header{padding:7px 16px 8px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff}
+.header-inner{min-width:0}
+.farm-title{padding:0;display:flex;align-items:center;gap:4px;font-size:18px;line-height:22px;letter-spacing:-1px;white-space:nowrap;font-weight:900}
+.farm-title .chev{color:#666;font-size:12px;line-height:1;margin-left:2px}
+.connected{display:flex;align-items:center;gap:6px;font-size:10px;line-height:16px;font-weight:500;color:#555}
+.dot{width:7px;height:7px;background:#7ad96b;display:inline-block;outline:1px solid #49994b;flex:none}
+.settings{border:2px solid var(--ink);width:33px;height:33px;font-size:19px;line-height:20px;background:white;box-shadow:2px 2px 0 #dedede;flex:none}
+.stage{position:relative;overflow:hidden;cursor:pointer;background:#fff;outline:none}
+.scene-canvas{display:block;position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.action-bubble{position:absolute;z-index:4;top:18px;left:50%;transform:translateX(-50%);white-space:nowrap;border:2px solid var(--ink);background:var(--white);padding:9px 12px;font-size:12px;letter-spacing:-.35px;box-shadow:3px 3px 0 #1112;max-width:calc(100% - 28px);overflow:hidden;text-overflow:ellipsis}
+.placeholder{position:absolute;z-index:3;border:2px dashed #333;background:rgba(255,255,255,.95);color:#555;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:transform 170ms steps(2,end);}
+.placeholder:hover,.placeholder:focus-visible{transform:translateY(-3px)}
+.placeholder .plus{font:700 30px/1 "Courier New",monospace;color:#9c9c9c}
+.placeholder span:last-child{font-size:11px;letter-spacing:1px}
+.plant-slot{height:110px;width:96px;left:17%;bottom:21%}
+.egg-slot{height:89px;width:80px;right:15%;bottom:24%}
+.ground-label{pointer-events:none;position:absolute;z-index:3;bottom:10px;left:15px;font:700 10px/1 monospace;color:#222;background:#fff;padding:5px 7px;border:1px solid #111;opacity:1}
+.panel{border-top:2px solid var(--ink);padding:12px 16px 7px;background:white;overflow:hidden}
+.pet-head{display:flex;justify-content:space-between;align-items:center;gap:6px;line-height:19px;margin-bottom:9px}
+.pet-name{font-size:15px;font-weight:900;letter-spacing:-.5px}
+.level{background:var(--pink);border:1px solid #111;padding:2px 5px;margin-left:6px;font-size:10px}
+.pet-head button{font-size:10px;color:#555;text-decoration:underline;text-underline-offset:3px;padding:3px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 11px}
+.stat{min-width:0}
+.stat-line{display:flex;align-items:center;gap:4px;margin-bottom:3px;min-width:0}
+.pixel-icon{width:15px;height:15px;image-rendering:pixelated;flex:none}
+.stat-label{font-size:11px;line-height:14px;letter-spacing:-.45px}
+.stat-num{font-size:10px;font-weight:500;color:#666;margin-left:auto}
+.bar{height:9px;width:100%;border:1.5px solid var(--ink);background:white;padding:1px;}
+.bar>span{display:block;height:100%;width:0;background:var(--green-deep);transition:width 700ms steps(10,end)}
+.bar.pink>span{background:#E87CA7}.bar.blue>span{background:#A7D7E8}.bar.yellow>span{background:#FAE082}
+.xp-row{margin-top:9px;padding-top:8px;border-top:1px dashed #b3b3b3;display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:center}
+.xp-row strong{font-size:11px}.xp-row span{font-size:10px;color:#666;font-weight:500}
+.xp-row .bar{grid-column:1/-1}
+.note{margin-top:9px;border:1.5px solid #111;background:#fff;padding:7px 9px;min-height:31px;display:flex;gap:7px;align-items:center;font-weight:500;font-size:10px;line-height:14px;white-space:nowrap;overflow:hidden}
+.note strong{color:#222;font-size:10px;flex:none}.note .message{overflow:hidden;text-overflow:ellipsis}
+.note.pink{background:#fff}.note.green{background:#fff}
+.nav{border-top:2px solid var(--ink);padding:6px 12px;display:flex;align-items:stretch;justify-content:space-between;gap:8px;background:#fff}
+.nav button{flex:1;font-size:12px;font-weight:900;min-width:0;letter-spacing:-.3px}
+.nav button.active{background:var(--green);border:2px solid #111;box-shadow:2px 2px 0 #b8d9af}
+.nav button:not(.active){border:2px solid transparent;color:#5d615d}
+.nav button:hover:not(.active){background:#f1f1f1}
+.overlay{position:absolute;inset:0;background:rgba(8,15,11,.34);z-index:25;display:grid;place-items:center;padding:22px}
+.overlay[hidden]{display:none}
+.modal{width:100%;max-width:338px;background:#fff;border:2px solid #17191a;box-shadow:6px 6px 0 #1113;padding:16px 14px 14px;position:relative}
+.modal h2{margin:0 0 12px;font-size:16px;line-height:20px}
+.modal p{margin:8px 0;font:500 12px/1.55 "Courier New",monospace;color:#333}
+.modal input{border:2px solid #111;background:white;width:100%;padding:10px;font-size:13px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.modal-actions button,.modal .close-x{border:2px solid #111;padding:8px 12px;font-size:11px;background:white}
+.modal-actions .primary{background:var(--green)}.close-x{position:absolute;right:12px;top:10px}
+.full .panel,.full .nav{display:none}.full{grid-template-rows:28px 69px 1fr 0px 0px}.full .stage{cursor:grab;touch-action:none}.full .stage.dragging{cursor:grabbing}.full .placeholder{cursor:grab}.full-back{display:none;position:absolute;right:12px;bottom:15px;border:2px solid #111;background:white;padding:8px 10px;z-index:4;font-size:11px}.full .full-back{display:block}
+.other-page{position:absolute;inset:97px 0 62px;background:white;z-index:12;padding:24px 18px;display:none}.other-page.visible{display:block}.other-page h2{font-size:17px;line-height:22px;margin:0 0 14px}.other-page p{font-size:12px;font-weight:500;line-height:18px;color:#696969}.other-card{border:2px solid #111;padding:15px;background:#f7fff3;margin-top:14px;font-size:12px;cursor:pointer;text-align:left;width:100%}.other-card small{display:block;font-size:10px;font-weight:400;color:#777;margin-top:6px}
+@media (max-height:740px){.phone{grid-template-rows:23px 56px minmax(210px,1fr) 204px 53px}.header{padding-top:3px}.farm-title{font-size:16px}.panel{padding:8px 15px 4px}.pet-head{margin-bottom:6px}.stat-grid{gap:6px 11px}.xp-row{margin-top:6px;padding-top:6px}.note{margin-top:6px;padding:5px 8px}.nav{padding:4px 10px}.other-page{inset:79px 0 53px}.action-bubble{top:12px}}
+@media (prefers-reduced-motion:reduce){.placeholder,.bar>span{transition:none}}
+/* The new map already includes the exact two characters; preserve their click zones only. */
+.placeholder{opacity:0;background:transparent;border:0;box-shadow:none}
+.placeholder:hover,.placeholder:focus-visible{transform:none}
+
+/* 2026-11-21 · Unified palette · actual separate image layers */
+:root{--ink:#182d30;--muted:#5f7371;--pink:#F5B5C8;--green:#AED49A;--green-deep:#7FD36C;--sky:#9BD8E9;--blue:#9BD8E9;--yellow:#39B39D;--white:#fff;--teal:#00949a}
+html,body{background:#ededed;color:var(--ink)}
+button:focus-visible{outline-color:#00949a}
+.dot{background:#56CE8B;outline-color:#00949a}
+.settings,.bar,.note,.nav button.active,.modal,.modal input,.modal-actions button,.modal .close-x{border-color:var(--ink)}
+.level{background:#F6B7CB;border-color:var(--ink)}
+.bar>span{background:#8bd75d}.bar.pink>span{background:#F36CA4}.bar.yellow>span{background:#39B39D}.bar.blue>span{background:#9BD8E9}
+.nav button.active{background:#B0D794;box-shadow:2px 2px 0 #D8EBD0}
+.modal-actions .primary{background:#B0D794}.other-card{background:#f2fff9}
+.stage{background:#00949a;touch-action:pan-y}
+.map-world{position:absolute;width:675px;height:1292px;left:0;top:0;transform-origin:top left;will-change:transform;user-select:none;touch-action:none;image-rendering:pixelated}
+.map-base{position:absolute;inset:0;background:#348E8E}
+.map-ground{position:absolute;pointer-events:none}
+.map-ground.path{background:#99C3AB}
+.map-ground.water{background:#99D9E8}
+.map-sprite{position:absolute;display:block;object-fit:fill;image-rendering:pixelated;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.map-sprite.main-character{pointer-events:auto;cursor:pointer}
+.map-speech{position:absolute;z-index:6;pointer-events:none;min-width:177px;padding:10px 12px;background:#fff;border:2px solid var(--ink);border-radius:3px;font:bold 11px/1.3 monospace;text-align:center;white-space:nowrap;image-rendering:pixelated}
+.map-speech:after{content:"";position:absolute;left:22px;bottom:-11px;border-top:10px solid var(--ink);border-right:11px solid transparent}
+.map-speech:before{content:"";position:absolute;left:24px;bottom:-8px;border-top:8px solid #fff;border-right:9px solid transparent;z-index:2}
+.action-bubble{color:var(--ink);border-color:var(--ink);box-shadow:3px 3px 0 #182d3026}
+.ground-label{color:var(--ink);border-color:var(--ink)}
+.full .stage{touch-action:none}
+.layer-mode .map-sprite,.layer-mode .map-speech{pointer-events:auto;cursor:move}
+.layer-mode .map-sprite.selected,.layer-mode .map-speech.selected{outline:2px dashed #fff;outline-offset:3px}
+.layer-marker{display:none;position:absolute;right:8px;bottom:49px;z-index:8;color:#fff;background:#182d30;font:700 10px/1.2 monospace;padding:6px 9px}
+.layer-mode .layer-marker{display:block}
+/* Original invisible placeholder styling must not hide the replacement sprites */
+.map-sprite.main-character{opacity:1 !important;visibility:visible}
+
+/* Action-v3: all motion and reward effects belong to independent map layers. */
+.farm-title #farmTitle{display:inline-block;max-width:235px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.map-speech{min-width:0;width:210px;max-width:210px;white-space:normal;line-height:1.4;padding:8px 9px;font-size:11px;box-shadow:2px 2px 0 #182d3030}
+.fx-food,.fx-bubbles,.fx-reward,.fx-sleepmask{position:absolute;z-index:8;display:none;pointer-events:none;user-select:none}
+.fx-food{width:66px;height:66px;object-fit:contain;image-rendering:pixelated;animation:foodAppear 2.9s steps(4,end) both}
+.fx-food.visible{display:block}
+.fx-reward{width:202px;background:#fff;border:2px solid var(--ink);padding:7px 9px;font:bold 10px/1.65 "Courier New",monospace;box-shadow:3px 3px 0 #0002}
+.fx-reward.visible{display:block;animation:rewardIn .3s steps(3,end) both}
+.fx-reward .positive{color:#128e83}.fx-reward .negative{color:#ae526f}
+.fx-bubbles{width:78px;height:56px;object-fit:contain;image-rendering:pixelated;animation:bubbleUp 1.4s steps(5,end) infinite}.fx-bubbles.visible{display:block}
+.fx-sleepmask{width:82px;height:61px;z-index:8;object-fit:contain;image-rendering:pixelated}
+.fx-sleepmask.visible{display:block;animation:eggNap 1.7s steps(3,end) infinite;transform-origin:50% 58%}
+#eggSlot.egg-rolling{z-index:12!important;animation:eggRollTrip 8s linear forwards;transform-origin:50% 72%}
+#plantSlot.plant-exploring{z-index:12!important;animation:plantExplore 8s steps(14,end) forwards}
+#eggSlot.egg-napping{animation:eggNap 1.7s steps(3,end) infinite;transform-origin:bottom center}
+#eggSlot.egg-scrubbing{animation:eggScrub .65s steps(3,end) infinite}
+@keyframes eggRollTrip{0%,4%{transform:translateX(0) rotate(0)}49%{transform:translateX(490px) rotate(720deg)}51%{transform:translateX(490px) rotate(720deg)}100%{transform:translateX(0) rotate(1440deg)}}
+@keyframes plantExplore{0%,8%{transform:translateX(0)}42%{transform:translateX(-210px)}56%{transform:translateX(-210px)}100%{transform:translateX(0)}}
+@keyframes eggNap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.93)}}
+@keyframes eggScrub{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes rewardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes foodAppear{0%{opacity:0;transform:scale(.5) translateY(15px)}30%,75%{opacity:1;transform:scale(1.05) translateY(-8px)}100%{opacity:0;transform:scale(.7) translateY(8px)}}
+@keyframes bubbleUp{0%{transform:translateY(8px);opacity:.7}100%{transform:translateY(-13px);opacity:1}}
+@keyframes sleepFloat{0%,100%{opacity:.65;transform:translateY(0)}50%{opacity:1;transform:translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){#eggSlot.egg-rolling{animation-duration:.3s}#plantSlot.plant-exploring{animation-duration:.3s}}
+
+
+/* Plant Mate V4: precise micro-adjustments, original layout unchanged. */
+.pet-head>div{display:flex;align-items:center;gap:5px;min-width:0}
+.pet-avatar{width:27px;height:28px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.pet-head .level{margin-left:2px}
+.modal input,.modal input:focus{color:#182d30!important;-webkit-text-fill-color:#182d30!important;caret-color:#182d30!important;background:#fff!important;opacity:1!important}
+.modal input::selection{background:#a8d9ed;color:#182d30}
+/* The egg talks. Its speech-tail points down at Eggie, not towards the plant. */
+.map-speech:after{left:auto!important;right:72px!important;border-right:none!important;border-left:11px solid transparent!important}
+.map-speech:before{left:auto!important;right:74px!important;border-right:none!important;border-left:9px solid transparent!important}
+.map-speech.plant-voice:after{right:auto!important;left:22px!important;border-right:11px solid transparent!important;border-left:0!important}
+.map-speech.plant-voice:before{right:auto!important;left:24px!important;border-right:9px solid transparent!important;border-left:0!important}
+/* Bare float-up text -- no box, border or rectangular shadow. */
+.fx-reward{width:225px!important;max-width:none!important;padding:0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;font:900 15px/1.4 "Courier New",monospace!important;letter-spacing:-.3px;text-shadow:none!important;filter:none!important;white-space:nowrap}
+.fx-reward .positive{color:#ffffff}.fx-reward .negative{color:#ffd3e5}
+.fx-reward.visible{display:block!important;animation:rewardDrift 3.0s ease-out both!important}
+@keyframes rewardDrift{0%{opacity:0;transform:translateY(14px)}8%{opacity:1;transform:translateY(-2px)}64%{opacity:1;transform:translateY(-22px)}100%{opacity:0;transform:translateY(-44px)}}
+/* Evolution index -- pixel silhouettes remain fully grayscale until discovered. */
+.evo-intro{font:600 11px/1.5 "Courier New",monospace;color:#637170;margin:0 0 10px}
+.evo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.evo-card{border:1.5px solid #aab0af;background:#f1f3f3;min-height:93px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;gap:4px;padding:5px 2px;color:#767d80}
+.evo-card .evo-picture{height:48px;width:52px;display:flex;align-items:center;justify-content:center;position:relative;image-rendering:pixelated}
+.evo-card .evo-picture img{height:100%;width:100%;object-fit:contain;image-rendering:pixelated}
+.evo-card .evo-question{position:absolute;top:11px;left:calc(50% - 8px);display:grid;place-items:center;font:900 20px/1 "Courier New",monospace;color:#536265;background:#e3e8e8;border:1px solid #bbc4c4;width:18px;height:22px}
+.evo-card .evo-caption{font:700 9px/1.2 "Courier New",monospace;color:#747d7e}
+.evo-card.unlocked{background:#fff;border:2px solid #182d30}
+.evo-card.unlocked .evo-caption{color:#182d30}
+.evo-card.unlocked .evo-picture img{height:52px;width:52px;object-fit:contain}
+.modal.evo-dialog{max-height:min(92dvh,700px);overflow:auto}
+
+
+/* V6 · Mushroom discoverable reward & clearly visible, no-box floating values */
+.fx-reward{z-index:19!important;overflow:visible!important;line-height:1.65!important;letter-spacing:.2px!important;font-size:14px!important}
+.fx-reward .positive{color:#DAFF9B!important;text-shadow:1px 1px 0 #14504A,-1px 1px 0 #14504A,1px -1px 0 #14504A,-1px -1px 0 #14504A!important}
+.fx-reward .negative{color:#FF93A8!important;text-shadow:1px 1px 0 #66343A,-1px 1px 0 #66343A,1px -1px 0 #66343A,-1px -1px 0 #66343A!important}
+.discover-visual{display:flex;align-items:center;gap:14px;justify-content:center;margin:10px auto 13px;background:#F7FBF8;border:1px dashed #A1CDB8;padding:10px 8px}
+.discover-visual img{width:80px;height:80px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.discover-visual p{margin:0!important;font-size:12px;line-height:1.6}
+.edit-done{display:none;position:absolute;right:12px;bottom:56px;z-index:14;background:white;border:2px solid var(--ink);padding:8px 12px;font:bold 11px/1 monospace;box-shadow:2px 2px 0 #152D3040}
+.layer-mode .edit-done{display:block}
+.map-sprite.mushroom-placed{image-rendering:pixelated;object-fit:contain}
+.map-sprite.mushroom-placed.selected{outline:2px dashed #E5FF7B;outline-offset:4px}
+
+
+/* V8 targeted corrections: high-priority UFOs and a follow-map activity badge.
+   The map, controls, state machine and transition timings are otherwise untouched. */
+.map-sprite[data-sprite^="ufo_"]{z-index:35!important}
+.map-world .action-bubble{
+  left:261px; top:425px; z-index:48;
+  transform:translateX(-50%);
+  width:max-content; max-width:236px;
+  border:3px solid #315A52; background:#CFE3D1; color:#183D39;
+  padding:10px 12px; font-size:13px; font-weight:900;
+  line-height:1.15; letter-spacing:0;
+  box-shadow:4px 4px 0 #315A5266;
+  overflow:visible; text-overflow:clip;
+}
+
+/* Only the requested refinement: crisp transparent food/bubbles/mask and sleep Zzz. */
+.fx-food{width:49px!important;height:49px!important;z-index:9!important}
+.fx-bubbles{width:70px!important;height:58px!important;z-index:9!important}
+.fx-sleepmask{width:88px!important;height:65px!important;z-index:9!important}
+.fx-zzz{position:absolute;left:443px;top:525px;z-index:10;display:none;pointer-events:none;
+  color:#A7D7E8;font:900 19px/1.2 "Courier New",monospace;letter-spacing:1px;
+  text-shadow:2px 2px 0 #2D8686;animation:zzzFloat 1.8s steps(5,end) infinite}
+.fx-zzz.visible{display:block}
+@keyframes zzzFloat{0%{opacity:0;transform:translateY(8px)}22%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(-15px)}}
+</style>
+</head>
+<body>
+<main class="phone" id="phone" aria-label="Plant Mate pixel garden prototype">
+  <div class="statusbar"><span>9:41</span><span class="status-symbols">▂▄▆ ▰ ▣</span></div>
+  <header class="header">
+    <div class="header-inner">
+      <button class="farm-title" id="renameButton" aria-label="Rename garden"><span id="farmTitle">hi's Garden</span><span class="chev">⌄</span></button>
+      <div class="connected"><i class="dot" aria-hidden="true"></i><span>Connected</span></div>
+    </div>
+    <button class="settings" id="settingsButton" aria-label="Settings">⚙</button>
+  </header>
+  <section class="stage" id="stage" role="button" tabindex="0" aria-label="Open fullscreen garden; drag map to explore after opening">
+    <div id="world" class="map-world" role="group" aria-label="Independent editable pixel garden layers"><div class="map-base"></div><div class="map-ground path" data-ground="0" style="left:0px;top:0px;width:60px;height:586px"></div>
+<div class="map-ground path" data-ground="1" style="left:514px;top:0px;width:60px;height:253px"></div>
+<div class="map-ground water" data-ground="2" style="left:325px;top:0px;width:189px;height:194px"></div>
+<div class="map-ground path" data-ground="3" style="left:269px;top:194px;width:305px;height:59px"></div>
+<div class="map-ground path" data-ground="4" style="left:269px;top:253px;width:60px;height:333px"></div>
+<div class="map-ground path" data-ground="5" style="left:0px;top:586px;width:675px;height:60px"></div>
+<div class="map-ground path" data-ground="6" style="left:514px;top:646px;width:60px;height:207px"></div>
+<div class="map-ground path" data-ground="7" style="left:330px;top:793px;width:60px;height:186px"></div>
+<div class="map-ground water" data-ground="8" style="left:390px;top:853px;width:285px;height:126px"></div>
+<div class="map-ground path" data-ground="9" style="left:0px;top:979px;width:675px;height:61px"></div>
+<div class="map-ground path" data-ground="10" style="left:121px;top:1040px;width:60px;height:252px"></div>
+<div class="map-ground path" data-ground="11" style="left:615px;top:1040px;width:60px;height:252px"></div>
+<img class="map-sprite scene-object" data-sprite="stalk_top" role="img" alt="stalk top" draggable="false" src="assets/png/stalk_top.png" style="left:256px;top:10px;width:56px;height:79px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="stalk_upper_left" role="img" alt="stalk upper left" draggable="false" src="assets/png/stalk_top.png" style="left:73px;top:100px;width:57px;height:80px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="swirl_upper" role="img" alt="swirl upper" draggable="false" src="assets/png/swirl_upper.png" style="left:341px;top:99px;width:88px;height:66px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="stones_top" role="img" alt="stones top" draggable="false" src="assets/png/stones_top.png" style="left:429px;top:10px;width:70px;height:66px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="bridge_top" role="img" alt="bridge top" draggable="false" src="assets/png/bridge_top.png" style="left:479px;top:65px;width:111px;height:93px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="ufo_top_left" role="img" alt="ufo top left" draggable="false" src="assets/png/ufo_top_left.png" style="left:16px;top:212px;width:94px;height:116px;z-index:35"/>
+<img class="map-sprite scene-object" data-sprite="dog_left" role="img" alt="dog left" draggable="false" src="assets/png/dog_left.png" style="left:175px;top:318px;width:69px;height:72px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="flower_cluster_01" role="img" alt="flower cluster 01" draggable="false" src="assets/png/flower_cluster_01.png" style="left:291px;top:268px;width:72px;height:59px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="flower_cluster_02" role="img" alt="flower cluster 02" draggable="false" src="assets/png/flower_cluster_01.png" style="left:378px;top:266px;width:72px;height:59px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="flower_cluster_03" role="img" alt="flower cluster 03" draggable="false" src="assets/png/flower_cluster_01.png" style="left:466px;top:266px;width:72px;height:59px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="stalk_mid_left" role="img" alt="stalk mid left" draggable="false" src="assets/png/stalk_top.png" style="left:72px;top:399px;width:57px;height:78px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="stalk_upper_right" role="img" alt="stalk upper right" draggable="false" src="assets/png/stalk_top.png" style="left:581px;top:346px;width:67px;height:90px;z-index:3"/>
+<img id="plantSlot" class="map-sprite scene-object main-character" data-sprite="tuantuan" role="img" alt="TuanTuan" draggable="false" src="assets/png/tuantuan.png" style="left:184px;top:516px;width:154px;height:159px;z-index:5"/>
+<img id="eggSlot" class="map-sprite scene-object main-character" data-sprite="eggie" role="img" alt="Eggie" draggable="false" src="assets/png/eggie.png" style="left:397px;top:540px;width:107px;height:144px;z-index:5"/>
+<img class="map-sprite scene-object" data-sprite="stalk_left_lower" role="img" alt="stalk left lower" draggable="false" src="assets/png/stalk_top.png" style="left:69px;top:748px;width:66px;height:88px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="ufo_right" role="img" alt="ufo right" draggable="false" src="assets/png/ufo_top_left.png" style="left:453px;top:718px;width:96px;height:117px;z-index:35"/>
+<img class="map-sprite scene-object" data-sprite="stalk_right_lower" role="img" alt="stalk right lower" draggable="false" src="assets/png/stalk_top.png" style="left:575px;top:755px;width:66px;height:91px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="stalk_lower_left" role="img" alt="stalk lower left" draggable="false" src="assets/png/stalk_top.png" style="left:73px;top:1035px;width:60px;height:86px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="bridge_bottom" role="img" alt="bridge bottom" draggable="false" src="assets/png/bridge_top.png" style="left:292px;top:854px;width:117px;height:84px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="stones_bottom" role="img" alt="stones bottom" draggable="false" src="assets/png/stones_top.png" style="left:433px;top:869px;width:72px;height:74px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="swirl_bottom_right" role="img" alt="swirl bottom right" draggable="false" src="assets/png/swirl_upper.png" style="left:569px;top:884px;width:90px;height:63px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="trio_lower_1" role="img" alt="trio lower 1" draggable="false" src="assets/png/flower_cluster_01.png" style="left:138px;top:910px;width:70px;height:55px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="trio_lower_2" role="img" alt="trio lower 2" draggable="false" src="assets/png/flower_cluster_01.png" style="left:212px;top:910px;width:70px;height:55px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="bridge_lower_left" role="img" alt="bridge lower left" draggable="false" src="assets/png/bridge_top.png" style="left:103px;top:1094px;width:116px;height:89px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="fence_lower_1" role="img" alt="fence lower 1" draggable="false" src="assets/png/fence_lower_1.png" style="left:322px;top:1047px;width:99px;height:82px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="fence_lower_2" role="img" alt="fence lower 2" draggable="false" src="assets/png/fence_lower_1.png" style="left:416px;top:1047px;width:99px;height:82px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="fence_lower_3" role="img" alt="fence lower 3" draggable="false" src="assets/png/fence_lower_1.png" style="left:510px;top:1047px;width:99px;height:82px;z-index:3"/>
+<img class="map-sprite scene-object" data-sprite="dog_lower" role="img" alt="dog lower" draggable="false" src="assets/png/dog_left.png" style="left:514px;top:1138px;width:93px;height:99px;z-index:3"/>
+<button class="action-bubble" id="actionBubble" type="button" aria-label="Current autonomous behavior"><span id="actionText">Feeding</span><span aria-hidden="true"> · </span><span id="countdown">00:15</span></button>
+      <div class="map-speech" id="characterSpeech" data-sprite="egg_dialog" style="left:285px;top:472px;display:none" aria-live="polite"></div>
+      <img class="fx-food" id="fxFood" style="left:356px;top:625px" aria-hidden="true" alt="" src="assets/png/food_fried_egg.png">
+      <img class="fx-bubbles" id="fxBubbles" style="left:444px;top:545px" aria-hidden="true" alt="" src="assets/png/bubble_cluster.png">
+      <img class="fx-sleepmask" id="fxSleepMask" style="left:409px;top:580px" aria-hidden="true" alt="" src="assets/png/eyemask_original_cutout.png">
+      <span class="fx-zzz" id="fxZzz" aria-hidden="true">Zzz</span>
+      <div class="fx-reward" id="fxReward" style="left:300px;top:452px" aria-live="polite"></div></div>
+    <span class="ground-label">GARDEN · DAY 01</span><span class="layer-marker">LAYER EDIT MODE</span>
+    <button type="button" class="full-back" id="backFull">← Back</button>
+    <button type="button" class="edit-done" id="finishEdit">Done editing ✓</button>
+  </section>
+  <section class="panel" id="panel">
+    <div class="pet-head"><div><img class="pet-avatar" src="assets/png/eggie_avatar.png" alt="Eggie sprite" draggable="false"><span class="pet-name">Eggie</span><span class="level" id="level">Lv.1</span></div><button id="petDetails">Details →</button></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-line"><canvas class="pixel-icon" data-icon="food" width="12" height="12"></canvas><span class="stat-label">Food</span><span class="stat-num" id="val-food">65</span></div><div class="bar"><span id="bar-food"></span></div></div>
+      <div class="stat"><div class="stat-line"><canvas class="pixel-icon" data-icon="mood" width="12" height="12"></canvas><span class="stat-label">Mood</span><span class="stat-num" id="val-mood">72</span></div><div class="bar pink"><span id="bar-mood"></span></div></div>
+      <div class="stat"><div class="stat-line"><canvas class="pixel-icon" data-icon="energy" width="12" height="12"></canvas><span class="stat-label">Energy</span><span class="stat-num" id="val-energy">76</span></div><div class="bar yellow"><span id="bar-energy"></span></div></div>
+      <div class="stat"><div class="stat-line"><canvas class="pixel-icon" data-icon="clean" width="12" height="12"></canvas><span class="stat-label">Clean</span><span class="stat-num" id="val-clean">80</span></div><div class="bar blue"><span id="bar-clean"></span></div></div>
+    </div>
+    <div class="xp-row"><strong>Growth XP</strong><span id="xpText">12 / 100</span><div class="bar pink"><span id="bar-xp"></span></div></div>
+    <button type="button" class="note pink" id="noteButton" aria-label="Latest event details"><strong>EVENT</strong><span class="message" id="eventText">Eggie joined your garden.</span></button>
+  </section>
+  <nav class="nav" id="nav" aria-label="Main navigation">
+    <button class="active" data-tab="garden" aria-current="page">Garden</button>
+    <button data-tab="social">Social</button>
+    <button data-tab="me">Me</button>
+  </nav>
+  <section class="other-page" id="otherPage" aria-live="polite"></section>
+  <section class="overlay" id="overlay" hidden aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Garden</h2><div id="modalContent"></div><div class="modal-actions" id="modalActions"><button class="primary" id="modalOk">OK</button></div>
+    </div>
+  </section>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id), phone=$('phone');
+ const behaviors=[
+  {name:'Feeding',key:'FEED',color:'#dffbc9',events:['Eggie enjoyed a sunny snack.','{owner} served a tiny feast.'],tip:'Sunlight becomes a surprise snack.',change:{food:20,mood:3,xp:4}},
+  {name:'Cleaning',key:'CLEAN',color:'#d9f5ff',events:['Dew-drop bath complete.','Eggie feels fresh again.'],tip:'A little dew bath helps clean Eggie.',change:{clean:25,mood:5,xp:4}},
+  {name:'Playing',key:'PLAY',color:'#ffe2ef',events:['Eggie rolled around the garden!','One tiny egg. One enormous lap.'],tip:'Rolling boosts mood, but uses energy.',change:{mood:12,energy:-8,clean:-4,xp:4}},
+  {name:'Exploring',key:'EXPLORE',color:'#d7f9c1',events:['{owner} found a tiny mushroom.','{owner} returned from an adventure.'],tip:'Exploring may find new garden decorations.',change:{xp:4}},
+  {name:'Resting',key:'REST',color:'#e7e3ff',events:['Eggie had a nice nap.','A quiet afternoon in the garden.'],tip:'Rest restores energy.',change:{energy:18,mood:4,xp:4}}
+ ];
+ const DURATION=15;
+ let index=0,remaining=DURATION,elapsed=0,ticks=0,tab='garden',settled=false;
+ let gardenOwner='hi';
+ let state={food:45,mood:50,energy:73,clean:65,level:1,xp:12};
+ const snackList=[
+  {emoji:'🍳',line:'My dream? An omelet.'},
+  {emoji:'🍕',line:'I dream of pizza. No crust issues.'},
+  {emoji:'🍔',line:'I dream of a burger. Eggstra large.'},
+  {emoji:'🍜',line:'My dream? Noodles with no end.'},
+  {emoji:'🍚',line:'I dream of fried rice. Ironic.'}
+ ];
+ let activeSnack=snackList[0];
+ let lastEvent='Eggie joined {owner}’s garden.';
+ let awaitingExploreChoice=false, mushroomCount=0;
+ const personalized = template => String(template).replaceAll('{owner}',gardenOwner);
+const iconPatterns={
+ food:['............','..GG....GG..','.G#GG..GG#G.','..#GGGGGG#..','...#GGGG#...','....#GG#....','.....##.....','.....##.....','.....##.....','....#GG#....','............','............'],
+ mood:['............','..##....##..','.#PP#..#PP#.','#PPPP##PPPP#','#PPPPPPPPPP#','.#PPPPPPPP#.','..#PPPPPP#..','...#PPPP#...','....#PP#....','.....##.....','............','............'],
+ energy:['......##....','.....#YY#...','....#YY#....','...#YY#.....','..#YYYY##...','...#YYY#....','....#Y#.....','...#Y#......','..#Y#.......','..##........','............','............'],
+ clean:['.....##.....','....#BB#....','...#BBBB#...','..#BBBBBB#..','..#BBBBBB#..','..#BBBBBB#..','...#BBBB#...','....####....','............','............','............','............']
+};
+function drawIcons(){document.querySelectorAll('canvas[data-icon]').forEach(el=>{const ctx=el.getContext('2d');ctx.imageSmoothingEnabled=false;const p=iconPatterns[el.dataset.icon];ctx.clearRect(0,0,12,12);p.forEach((line,y)=>[...line].forEach((ch,x)=>{if(ch==='.')return;ctx.fillStyle=ch==='#'?'#182d30':ch==='P'?'#F36CA4':ch==='Y'?'#39B39D':ch==='G'?'#AED49A':'#9BD8E9';ctx.fillRect(x,y,1,1)}));});}
+
+// Independently composited world. Every map object above is a separate transparent PNG in its own <img> element.
+const MAP_W=675, MAP_H=1292, PX_SCALE=1;
+const INITIAL_CAMERA={x:337,y:585};
+const view={centerX:INITIAL_CAMERA.x,centerY:INITIAL_CAMERA.y};
+const world=$('world'),stage=$('stage');
+const MUSHROOM_PNG='assets/png/exploration_mushroom.png';
+const layerNodes=[...world.querySelectorAll('[data-sprite]')];
+const originalPositions=Object.fromEntries(layerNodes.map(el=>[el.dataset.sprite,{x:parseFloat(el.style.left),y:parseFloat(el.style.top)}]));
+let drag=null,dragged=false,suppressClick=false,layerMode=false,selectedLayer=null;
+function dimensions(){let r=stage.getBoundingClientRect();return {width:r.width,height:r.height,vw:r.width,vh:r.height};}
+function clampCamera(){let d=dimensions();view.centerX=Math.max(d.vw/2,Math.min(MAP_W-d.vw/2,view.centerX));view.centerY=Math.max(d.vh/2,Math.min(MAP_H-d.vh/2,view.centerY));}
+function pixelScene(){clampCamera();let d=dimensions();world.style.transform=`translate3d(${Math.round(d.width/2-view.centerX)}px,${Math.round(d.height/2-view.centerY)}px,0)`;}
+const ro=new ResizeObserver(()=>pixelScene());ro.observe(stage);
+stage.addEventListener('pointerdown',e=>{
+ if(layerMode && e.target.closest('[data-sprite]')){
+  const el=e.target.closest('[data-sprite]');e.stopPropagation();selectedLayer=el;
+  layerNodes.forEach(o=>o.classList.toggle('selected',o===el));
+  drag={kind:'sprite',id:e.pointerId,el,startX:e.clientX,startY:e.clientY,x:parseFloat(el.style.left),y:parseFloat(el.style.top)};
+  el.setPointerCapture(e.pointerId);return;
+ }
+ if(!phone.classList.contains('full')||e.target.closest('button')||e.target.closest('.main-character'))return;
+ drag={kind:'map',id:e.pointerId,startX:e.clientX,startY:e.clientY,cx:view.centerX,cy:view.centerY};dragged=false;stage.setPointerCapture(e.pointerId);
+});
+function moveEvent(e){if(!drag||e.pointerId!==drag.id)return;
+ const dx=e.clientX-drag.startX,dy=e.clientY-drag.startY;
+ if(drag.kind==='sprite'){
+  if(Math.abs(dx)+Math.abs(dy)>3){dragged=true;drag.el.style.left=Math.max(0,Math.min(MAP_W-10,Math.round(drag.x+dx)))+'px';drag.el.style.top=Math.max(0,Math.min(MAP_H-10,Math.round(drag.y+dy)))+'px';}
+ }else{
+  if(Math.abs(dx)+Math.abs(dy)>5){dragged=true;stage.classList.add('dragging');}
+  if(dragged){view.centerX=drag.cx-dx;view.centerY=drag.cy-dy;pixelScene();}
+ }
+}
+stage.addEventListener('pointermove',moveEvent);
+layerNodes.forEach(el=>el.addEventListener('pointermove',moveEvent));
+function finishDrag(e){if(!drag||e.pointerId!==drag.id)return;
+ if(dragged){suppressClick=true;setTimeout(()=>suppressClick=false,120);}drag=null;stage.classList.remove('dragging');}
+stage.addEventListener('pointerup',finishDrag);stage.addEventListener('pointercancel',finishDrag);
+layerNodes.forEach(el=>{el.addEventListener('pointerup',finishDrag);el.addEventListener('pointercancel',finishDrag);});
+stage.addEventListener('wheel',e=>{if(!phone.classList.contains('full'))return;e.preventDefault();view.centerX+=e.deltaX;view.centerY+=e.deltaY;pixelScene();},{passive:false});
+function editLayers(enable){if(!enable && typeof ufoBodies!=='undefined')ufoBodies.forEach(b=>{b.x=parseFloat(b.el.style.left);b.y=parseFloat(b.el.style.top)});layerMode=enable;phone.classList.toggle('layer-mode',enable);if(enable && !phone.classList.contains('full')){phone.classList.add('full');pixelScene()}if(!enable){layerNodes.forEach(el=>el.classList.remove('selected'));selectedLayer=null;}}
+function exportLayers(){let data=layerNodes.map(el=>({id:el.dataset.sprite,x:parseFloat(el.style.left),y:parseFloat(el.style.top),width:el.offsetWidth,height:el.offsetHeight}));let blob=new Blob([JSON.stringify({width:MAP_W,height:MAP_H,objects:data},null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PlantMate_garden_layer_positions.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+ function formatDelta(n){return (n>0?'+':'')+String(n)}
+ function rewardHTML(changes){
+   const aliases={food:'Food',mood:'Mood',energy:'Energy',clean:'Clean',xp:'Growth XP'};
+   return Object.entries(changes).map(([key,n])=>`<div class="${n<0?'negative':'positive'}">${aliases[key]} ${formatDelta(n)}</div>`).join('');
+ }
+ function positionRewardNearEgg(){
+   const reward=$('fxReward');
+   const egg=$('eggSlot');
+   const eggLeft=parseFloat(egg.style.left)||397;
+   const eggTop=parseFloat(egg.style.top)||540;
+   reward.style.left=(eggLeft+8)+'px';
+   reward.style.top=(eggTop-116)+'px';
+ }
+
+ // Return reward: a real standalone, draggable mushroom sprite, not baked into the map PNG.
+ function addMushroomSprite(){
+   mushroomCount++;
+   const id='mushroom_'+String(mushroomCount).padStart(2,'0');
+   const item=document.createElement('img');
+   item.className='map-sprite scene-object mushroom-placed';
+   item.dataset.sprite=id;item.alt='Mushroom decoration';item.draggable=false;item.src=MUSHROOM_PNG;
+   const x=499+(mushroomCount%3)*29, y=699+(Math.floor((mushroomCount-1)/3)%3)*58;
+   item.style.cssText=`left:${x}px;top:${y}px;width:58px;height:68px;z-index:4`;
+   // Insert with other layers, before FX elements.
+   world.insertBefore(item,$('fxFood'));
+   layerNodes.push(item);
+   item.addEventListener('pointermove',moveEvent);
+   item.addEventListener('pointerup',finishDrag);
+   item.addEventListener('pointercancel',finishDrag);
+   return item;
+ }
+ function showMushroomFind(){
+   if(awaitingExploreChoice)return;
+   awaitingExploreChoice=true;
+   lastEvent='{owner} brought back a little mushroom.';
+   render();
+   const overlay=$('overlay');
+   document.querySelector('.modal').classList.remove('evo-dialog');
+   $('modalTitle').textContent='Explore reward!';
+   $('modalContent').innerHTML='';
+   const display=document.createElement('div');display.className='discover-visual';
+   const img=document.createElement('img');img.src=MUSHROOM_PNG;img.alt='Pixel mushroom';
+   const p=document.createElement('p');p.textContent=gardenOwner+' brought back a mushroom! Add it to your garden?';
+   display.append(img,p);$('modalContent').append(display);
+   $('modalActions').innerHTML='';
+   const no=document.createElement('button');no.textContent='No';
+   const yes=document.createElement('button');yes.textContent='Yes · Place';yes.className='primary';
+   no.onclick=()=>{awaitingExploreChoice=false;close();};
+   yes.onclick=()=>{
+      const item=addMushroomSprite();
+      awaitingExploreChoice=false;close();
+      lastEvent='{owner} placed a new mushroom in the garden.';
+      render();
+      // Direct placement: enter the existing editable full map with this new independent layer selected.
+      editLayers(true);
+      layerNodes.forEach(el=>el.classList.toggle('selected',el===item));
+      selectedLayer=item;
+      view.centerX=Math.max(195,Math.min(MAP_W-195,parseFloat(item.style.left)+29));
+      view.centerY=Math.max(200,Math.min(MAP_H-380,parseFloat(item.style.top)+34));
+      pixelScene();
+   };
+   $('modalActions').append(no,yes);
+   overlay.hidden=false;overlay.setAttribute('aria-hidden','false');
+ }
+ // Offline export from independent map layers at native 675x1292, including added decorations.
+ function exportMapPNG(){
+   const canvas=document.createElement('canvas');canvas.width=MAP_W;canvas.height=MAP_H;
+   const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+   ctx.fillStyle=getComputedStyle(world.querySelector('.map-base')).backgroundColor;
+   ctx.fillRect(0,0,MAP_W,MAP_H);
+   [...world.querySelectorAll('.map-ground')].forEach(el=>{
+      const st=getComputedStyle(el);ctx.fillStyle=st.backgroundColor;
+      ctx.fillRect(parseFloat(el.style.left),parseFloat(el.style.top),parseFloat(el.style.width),parseFloat(el.style.height));
+   });
+   const imgs=layerNodes.filter(el=>el.complete&&el.naturalWidth)
+      .sort((a,b)=>(parseInt(a.style.zIndex||'3')-parseInt(b.style.zIndex||'3')));
+   imgs.forEach(el=>ctx.drawImage(el,Math.round(parseFloat(el.style.left)),Math.round(parseFloat(el.style.top)),el.offsetWidth,el.offsetHeight));
+   canvas.toBlob(blob=>{if(!blob)return;let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PlantMate_Garden_Map_675x1292.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)},'image/png');
+ }
+ function showSpeech(text,x=285,y=472,speaker='egg'){let el=$('characterSpeech');el.textContent=text;el.style.left=x+'px';el.style.top=y+'px';el.classList.toggle('plant-voice',speaker==='plant');el.style.display='block'}
+ function hideSpeech(){$('characterSpeech').style.display='none'}
+ function clearVisuals(){
+   hideSpeech();$('fxFood').classList.remove('visible');
+   $('fxReward').classList.remove('visible');$('fxReward').innerHTML='';
+   $('fxBubbles').classList.remove('visible');$('fxSleepMask').classList.remove('visible');$('fxZzz').classList.remove('visible');
+   $('eggSlot').classList.remove('egg-rolling','egg-napping','egg-scrubbing');
+   $('plantSlot').classList.remove('plant-exploring');
+ }
+ function render(){
+   const behavior=behaviors[index];$('actionText').textContent=behavior.name;
+   $('countdown').textContent=`00:${String(remaining).padStart(2,'0')}`;
+   $('actionBubble').style.background='#CFE3D1';$('actionBubble').style.borderColor='#315A52';$('actionBubble').style.color='#183D39';
+   ['food','mood','energy','clean'].forEach(k=>{$('val-'+k).textContent=state[k];$('bar-'+k).style.width=state[k]+'%'});
+   $('level').textContent='Lv.'+state.level;$('xpText').textContent=`${state.xp} / 100`;$('bar-xp').style.width=state.xp+'%';
+   $('eventText').textContent=personalized(lastEvent);pixelScene();
+ }
+ function settleAction(){
+   if(settled)return;
+   settled=true;
+   let b=behaviors[index],actual={};
+   for(const [key,n] of Object.entries(b.change)){
+     if(key==='xp'){state.xp+=n;actual[key]=n;}
+     else{const old=state[key];state[key]=Math.max(0,Math.min(100,old+n));actual[key]=state[key]-old;}
+   }
+   while(state.xp>=100){state.xp-=100;state.level++;}
+   lastEvent=b.events[ticks%b.events.length];
+   $('fxReward').innerHTML=rewardHTML(actual);
+   positionRewardNearEgg();
+   $('fxReward').classList.add('visible');
+   render();
+ }
+ function beginBehavior(){
+   settled=false;elapsed=0;remaining=DURATION;clearVisuals();
+   const behavior=behaviors[index];
+   if(behavior.key==='FEED'){
+     activeSnack=snackList[ticks%snackList.length];
+     showSpeech(activeSnack.line,285,478);
+     // Keep latest completed event until the current behavior settles.
+   }else if(behavior.key==='PLAY'){
+     showSpeech('Watch me roll! ...and roll back.',285,478);
+     // Keep latest completed event until the current behavior settles.
+   }else if(behavior.key==='EXPLORE'){
+     showSpeech('BRB. Going where the grass is greener.',170,481,'plant');
+     // Keep latest completed event until the current behavior settles.
+   }else if(behavior.key==='REST'){
+     showSpeech('Dreaming of tomorrow... Zzz.',285,478);
+     // Keep latest completed event until the current behavior settles.
+   }else if(behavior.key==='CLEAN'){
+     showSpeech('Dew not disturb. Spa day!',285,478);
+     // Keep latest completed event until the current behavior settles.
+   }
+   render();
+ }
+ function phaseBehavior(){
+   const key=behaviors[index].key;
+   if(key==='FEED'){
+     if(elapsed===3){$('fxFood').classList.add('visible');}
+     if(elapsed===6){$('fxFood').classList.remove('visible');hideSpeech();}
+     if(elapsed===8){settleAction();}
+     if(elapsed===12){$('fxReward').classList.remove('visible');}
+   }else if(key==='PLAY'){
+     if(elapsed===2){hideSpeech();void $('eggSlot').offsetWidth;$('eggSlot').classList.add('egg-rolling');}
+     if(elapsed===11){$('eggSlot').classList.remove('egg-rolling');settleAction();}
+     if(elapsed===14){$('fxReward').classList.remove('visible');}
+   }else if(key==='EXPLORE'){
+     if(elapsed===2){hideSpeech();$('plantSlot').classList.add('plant-exploring');}
+     if(elapsed===10){$('plantSlot').classList.remove('plant-exploring');settleAction();}
+     if(elapsed===11){$('fxReward').classList.remove('visible');showMushroomFind();}
+     if(elapsed===13){$('fxReward').classList.remove('visible');}
+   }else if(key==='REST'){
+     if(elapsed===3){hideSpeech();$('eggSlot').classList.add('egg-napping');$('fxSleepMask').classList.add('visible');$('fxZzz').classList.add('visible');}
+     if(elapsed===10){settleAction();}
+     if(elapsed===13){$('fxReward').classList.remove('visible');}
+   }else if(key==='CLEAN'){
+     if(elapsed===3){hideSpeech();$('eggSlot').classList.add('egg-scrubbing');$('fxBubbles').classList.add('visible');}
+     if(elapsed===10){$('eggSlot').classList.remove('egg-scrubbing');$('fxBubbles').classList.remove('visible');settleAction();}
+     if(elapsed===13){$('fxReward').classList.remove('visible');}
+   }
+ }
+ function step(){index=(index+1)%behaviors.length;ticks++;beginBehavior();}
+ function tickOneSecond(){
+   if(awaitingExploreChoice)return;
+   elapsed++;remaining=Math.max(0,DURATION-elapsed);
+   if(elapsed>=DURATION){step();return;}
+   phaseBehavior();$('countdown').textContent=`00:${String(remaining).padStart(2,'0')}`;
+ }
+ setInterval(()=>{if(!document.hidden)tickOneSecond()},1000);
+function showEvolutionBook(){modal('Evolution Book',`<p class="evo-intro">2 / 9 unlocked · Discover who comes next.</p><div class="evo-grid" role="list"><div class="evo-card unlocked" role="listitem" aria-label="Baybi unlocked"><div class="evo-picture"><img alt="Baybi" src="assets/png/baybi.png"></div><div class="evo-caption">BAYBI ✓</div></div><div class="evo-card unlocked" role="listitem" aria-label="Eggie unlocked"><div class="evo-picture"><img alt="Eggie" src="assets/png/eggie_avatar.png"></div><div class="evo-caption">EGGIE ✓</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 3 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 4 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette_714f2b.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 5 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette_6930c0.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 6 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette_5ddea4.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 7 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette_c70b96.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 8 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette_da7008.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div><div class="evo-card locked" role="listitem" aria-label="Evolution 9 locked"><div class="evo-picture"><img alt="Unknown evolution silhouette" src="assets/png/unknown_evolution_silhouette_ae3c53.png"><span class="evo-question">?</span></div><div class="evo-caption">???</div></div></div>`);document.querySelector('.modal').classList.add('evo-dialog');}
+function modal(title,body,options={}){document.querySelector('.modal').classList.remove('evo-dialog');const overlay=$('overlay');$('modalTitle').textContent=title;$('modalContent').innerHTML=body;$('modalActions').innerHTML='';const cancel=document.createElement('button');cancel.textContent='Close';cancel.onclick=close;if(options.onSave){let save=document.createElement('button');save.textContent='Save';save.className='primary';save.onclick=options.onSave;$('modalActions').append(cancel,save);}else{$('modalActions').append(cancel);}overlay.hidden=false;overlay.setAttribute('aria-hidden','false');}
+function close(){document.querySelector('.modal').classList.remove('evo-dialog');$('overlay').hidden=true;$('overlay').setAttribute('aria-hidden','true')}
+$('overlay').addEventListener('click',e=>{if(e.target===$('overlay')&&!awaitingExploreChoice)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!awaitingExploreChoice)close()});
+ $('renameButton').onclick=()=>{
+   modal('Rename Garden',`<p>Change the name only. “'s Garden” stays.</p><input id="gardenInput" type="text" maxlength="16" aria-label="Garden owner name">`,
+     {onSave:()=>{let value=$('gardenInput').value.trim().replace(/(?:['’]s)?\s*garden$/i,'').replace(/['’]s$/i,'').trim();
+       if(value){gardenOwner=value;$('farmTitle').textContent=gardenOwner+"'s Garden";render();}close();}});
+   $('gardenInput').value=gardenOwner;
+ };
+$('settingsButton').onclick=()=>modal('Settings','<p>Connected · Demo Mode</p><p>Auto actions: ON</p><p>Sensor data: simulated</p><button id="editLayersBtn" class="other-card">Edit map layers</button><button id="exportMapBtn" class="other-card">Export garden PNG</button><button id="exportLayersBtn" class="other-card">Export layer positions</button>');
+$('overlay').addEventListener('click',e=>{if(e.target.id==='editLayersBtn'){close();editLayers(!layerMode);}if(e.target.id==='exportLayersBtn'){exportLayers();}if(e.target.id==='exportMapBtn'){exportMapPNG();}});
+$('actionBubble').onclick=e=>{e.stopPropagation();modal(behaviors[index].name,`<p>${behaviors[index].tip}</p><p>Auto behavior · No manual control</p>`)};
+$('plantSlot').onclick=e=>{e.stopPropagation();if(layerMode||suppressClick)return;modal(gardenOwner,'<p>Garden caretaker · Autonomous</p>')};
+$('eggSlot').onclick=e=>{e.stopPropagation();if(layerMode||suppressClick)return;modal('Eggie · Lv.'+state.level,`<p>Food ${state.food} · Mood ${state.mood}</p><p>Energy ${state.energy} · Clean ${state.clean}</p><p>XP ${state.xp}/100</p>`)};
+$('petDetails').onclick=showEvolutionBook;
+$('noteButton').onclick=()=>modal('Garden Log',`<p>${personalized(lastEvent)}</p><p>${behaviors[index].tip}</p>`);
+function fullscreen(){phone.classList.add('full');pixelScene()}function exitFullscreen(){if(layerMode)editLayers(false);phone.classList.remove('full');view.centerX=INITIAL_CAMERA.x;view.centerY=INITIAL_CAMERA.y;pixelScene()}
+$('stage').addEventListener('click',e=>{if(e.target.closest('button')||suppressClick)return;if(!phone.classList.contains('full'))fullscreen()});
+$('stage').addEventListener('keydown',e=>{if(e.key==='Enter' && e.target===$('stage'))fullscreen()});
+$('backFull').onclick=e=>{e.stopPropagation();exitFullscreen()};
+$('finishEdit').onclick=e=>{e.stopPropagation();editLayers(false);exitFullscreen();};
+const other=$('otherPage');document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('.nav button').forEach(k=>{let selected=k===b;k.classList.toggle('active',selected);if(selected)k.setAttribute('aria-current','page');else k.removeAttribute('aria-current')});if(tab==='garden'){other.classList.remove('visible');return;}other.classList.add('visible');other.innerHTML=tab==='social'?'<h2>Community</h2><button class="other-card" id="friends">Friends’ Gardens<small>No updates yet</small></button>':'<h2>My Collection</h2><button class="other-card" id="collection">Pet Book <small>Eggie · Lv.'+state.level+'</small></button><button class="other-card" id="devices">Device <small>Connected · Demo</small></button>';other.querySelectorAll('button').forEach(x=>x.onclick=()=>x.id==='collection'?showEvolutionBook():modal(x.textContent.trim().split('\n')[0],'<p>Preview screen.</p>'));});
+
+// Independent UFOs drift at individual random angles; they bounce off the 675x1292 world bounds.
+// Paused when map-layer editor is enabled, so individual sprites can be dragged precisely.
+const ufoLayers=layerNodes.filter(el=>el.dataset.sprite.startsWith('ufo_'));
+const ufoBodies=ufoLayers.map((el,i)=>{
+  const angle=Math.random()*Math.PI*2, speed=12+Math.random()*13;
+  return {el,x:parseFloat(el.style.left),y:parseFloat(el.style.top),vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed};
+});
+let ufoFrameTime=0;
+function animateUfos(frameTime){
+  const dt=ufoFrameTime?Math.min((frameTime-ufoFrameTime)/1000,.06):0;ufoFrameTime=frameTime;
+  if(!layerMode&&!document.hidden){
+    ufoBodies.forEach(b=>{
+      const maxX=MAP_W-b.el.offsetWidth,maxY=MAP_H-b.el.offsetHeight;
+      b.x+=b.vx*dt;b.y+=b.vy*dt;
+      if(b.x<0){b.x=0;b.vx=Math.abs(b.vx)}else if(b.x>maxX){b.x=maxX;b.vx=-Math.abs(b.vx)}
+      if(b.y<0){b.y=0;b.vy=Math.abs(b.vy)}else if(b.y>maxY){b.y=maxY;b.vy=-Math.abs(b.vy)}
+      b.el.style.left=Math.round(b.x)+'px';b.el.style.top=Math.round(b.y)+'px';
+    });
+  }
+  requestAnimationFrame(animateUfos);
+}
+requestAnimationFrame(animateUfos);
+
+drawIcons();beginBehavior();window.plantMatePrototype={advance:step,advanceSeconds:(n=1)=>{for(let i=0;i<n;i++)tickOneSecond()},getState:()=>({...state,behavior:behaviors[index].key,camera:{...view}}),setCamera:(x,y)=>{view.centerX=x;view.centerY=y;pixelScene()},center:()=>{view.centerX=INITIAL_CAMERA.x;view.centerY=INITIAL_CAMERA.y;pixelScene()},getLayerManifest:()=>layerNodes.map(el=>({id:el.dataset.sprite,x:parseFloat(el.style.left),y:parseFloat(el.style.top)})),editLayers,exportLayers,exportMapPNG,addMushroomSprite,showMushroomFind,getViewSize:dimensions,getUfoPositions:()=>ufoBodies.map(b=>({id:b.el.dataset.sprite,x:b.x,y:b.y}))};
+})();
+</script>
+</body>
+</html>

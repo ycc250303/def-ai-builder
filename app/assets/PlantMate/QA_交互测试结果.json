@@ -1,0 +1,61 @@
+{
+  "tests": [
+    {
+      "name": "三模块完整加载",
+      "pass": true
+    },
+    {
+      "name": "V12 初始等级 Lv.1 XP 12",
+      "pass": true
+    },
+    {
+      "name": "Page 1 原生导航到 Social",
+      "pass": true
+    },
+    {
+      "name": "Social 当前用户来自 V12 hi",
+      "pass": true
+    },
+    {
+      "name": "Social 收藏同步至 Hub",
+      "pass": true
+    },
+    {
+      "name": "Social 导航 Me",
+      "pass": true
+    },
+    {
+      "name": "Me 显示 V12 Lv.1",
+      "pass": true
+    },
+    {
+      "name": "Me 保存列表同步 Social",
+      "pass": true
+    },
+    {
+      "name": "Me 宠物 4 属性与 V12 一致",
+      "pass": true
+    },
+    {
+      "name": "V12 结算后 Me 属性实时更新",
+      "pass": true
+    },
+    {
+      "name": "成长日记记录 V12 结算",
+      "pass": true
+    },
+    {
+      "name": "访问权限同步到 Social",
+      "pass": true
+    },
+    {
+      "name": "Me 底部返回原样 Garden",
+      "pass": true
+    },
+    {
+      "name": "浏览器无 JS 错误",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

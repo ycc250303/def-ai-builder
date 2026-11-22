@@ -1,144 +1,251 @@
-import 'package:ditredi/ditredi.dart';
-import 'package:flutter/services.dart';
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
+
+import 'data/app_store.dart';
+import 'l10n/app_localizations.dart';
+import 'ui/common.dart';
+import 'ui/home_page.dart';
+import 'ui/garden_scene.dart';
+import 'ui/mine_pages.dart';
+import 'ui/social_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final model = await loadCubeModel();
-  runApp(MyApp(model: model));
+  await SceneLayout.shared;
+  final store = await AppStore.load(PreferencesStorage());
+  await store.advance(DateTime.now());
+  runApp(PlantMateApp(store: store));
 }
 
-/// 启动时加载模型和材质，资源缺失或解析失败时立即暴露错误。
-Future<Mesh3D> loadCubeModel() async {
-  final parser = ObjParser();
-  final source = await rootBundle.loadString('assets/models/cube.obj');
-  final materialSource = await rootBundle.loadString('assets/models/cube.mtl');
-  final materials = await parser.parseMtlLib(materialSource);
-  if (materials == null || materials.isEmpty) {
-    throw const FormatException('正方体材质文件必须包含面颜色');
-  }
-  final parsedFaces = await parser.parse(
-    source,
-    materialLib: {'cube.mtl': materials},
-  );
-  // 渲染表面由具有面积的三角形组成。
-  final faces = parsedFaces.where((face) {
-    final triangle = face.triangle;
-    final firstEdge = triangle.point1 - triangle.point0;
-    final secondEdge = triangle.point2 - triangle.point0;
-    return firstEdge.cross(secondEdge).length2 > 0;
-  }).toList();
-  if (faces.isEmpty || faces.any((face) => face.color == null)) {
-    throw const FormatException('正方体模型必须包含有效表面和材质');
-  }
-  return Mesh3D(faces);
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.model});
-
-  final Mesh3D model;
-
+class PlantMateApp extends StatelessWidget {
+  const PlantMateApp({super.key, required this.store, this.runClock = true});
+  final AppStore store;
+  final bool runClock;
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: '正方体查看器',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4263EB)),
-        scaffoldBackgroundColor: const Color(0xFFF3F5FA),
+  Widget build(BuildContext context) => AppScope(
+    store: store,
+    child: ListenableBuilder(
+      listenable: store,
+      builder: (context, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Plant Mate',
+        locale: store.data.language == 'system'
+            ? null
+            : Locale(store.data.language),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.light,
+          scaffoldBackgroundColor: paper,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xff648b58),
+            primary: const Color(0xff486c43),
+            surface: paper,
+            onSurface: ink,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: paper,
+            foregroundColor: ink,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: false,
+            titleTextStyle: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: ink,
+            ),
+          ),
+          textTheme: const TextTheme(
+            bodyMedium: TextStyle(color: ink, height: 1.45),
+            bodySmall: TextStyle(color: muted, height: 1.5),
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+              backgroundColor: leaf,
+              foregroundColor: ink,
+              elevation: 0,
+              minimumSize: const Size(48, 46),
+              side: const BorderSide(color: ink, width: 1.3),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: ink,
+              side: const BorderSide(color: ink),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+            contentPadding: const EdgeInsets.all(14),
+          ),
+          snackBarTheme: const SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: ink,
+          ),
+          dividerColor: const Color(0xffd8dfd4),
+        ),
+        home: MainShell(runClock: runClock),
       ),
-      home: CubeViewerPage(model: model),
-    );
-  }
+    ),
+  );
 }
 
-class CubeViewerPage extends StatefulWidget {
-  const CubeViewerPage({super.key, required this.model});
+class MainShell extends StatefulWidget {
+  const MainShell({super.key, required this.runClock});
+  final bool runClock;
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
 
-  final Mesh3D model;
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
+  int index = 0;
+  bool fullGarden = false;
+  Timer? clock;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (widget.runClock) {
+      clock = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (mounted) {
+          unawaited(AppScope.of(context).advance(DateTime.now()));
+        }
+      });
+    }
+  }
 
   @override
-  State<CubeViewerPage> createState() => _CubeViewerPageState();
-}
-
-class _CubeViewerPageState extends State<CubeViewerPage> {
-  final _controller = DiTreDiController(
-    rotationX: -25,
-    rotationY: 35,
-    ambientLightStrength: 0.65,
-  );
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!widget.runClock) {
+      return;
+    }
+    if (state == AppLifecycleState.resumed) {
+      unawaited(AppScope.of(context).advance(DateTime.now()));
+    }
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    clock?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('正方体查看器'),
-        actions: [
-          IconButton(
-            tooltip: '重置视角',
-            onPressed: () => _controller.update(rotationX: -25, rotationY: 35),
-            icon: const Icon(Icons.refresh),
+  Widget build(BuildContext context) => Scaffold(
+    body: SafeArea(
+      bottom: false,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 650),
+          child: IndexedStack(
+            index: index,
+            children: [
+              TickerMode(
+                enabled: index == 0,
+                child: HomePage(
+                  fullGarden: fullGarden,
+                  onFullGarden: (value) => setState(() => fullGarden = value),
+                ),
+              ),
+              TickerMode(enabled: index == 1, child: const SocialPage()),
+              TickerMode(enabled: index == 2, child: const MinePage()),
+            ],
           ),
-        ],
+        ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Semantics(
-                    label: '三维正方体，拖拽可以旋转观察',
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.grab,
-                      child: GestureDetector(
-                        key: const ValueKey('cube-viewport'),
-                        behavior: HitTestBehavior.opaque,
-                        onPanUpdate: (details) {
-                          // 两个旋转方向均允许完整转动，角度归一化后连续拖拽。
-                          _controller.update(
-                            rotationX:
-                                (_controller.rotationX -
-                                    details.delta.dy * 0.5) %
-                                360,
-                            rotationY:
-                                (_controller.rotationY -
-                                    details.delta.dx * 0.5) %
-                                360,
-                          );
-                        },
-                        child: DiTreDi(
-                          figures: [widget.model],
-                          controller: _controller,
+    ),
+    bottomNavigationBar: Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: ink, width: 1.6)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 650),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              child: Row(
+                children: [
+                  for (final (i, label, icon) in [
+                    (0, context.l.garden, Icons.local_florist_outlined),
+                    (1, context.l.social, Icons.people_outline),
+                    (2, context.l.me, Icons.person_outline),
+                  ])
+                    Expanded(
+                      child: Semantics(
+                        selected: index == i,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: Material(
+                            color: index == i ? leaf : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                              side: BorderSide(
+                                color: index == i ? ink : Colors.transparent,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: InkWell(
+                              key: ValueKey('nav-$i'),
+                              onTap: () => setState(() => index = i),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      icon,
+                                      size: 20,
+                                      color: index == i ? ink : muted,
+                                    ),
+                                    const SizedBox(width: 7),
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: index == i ? ink : muted,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
+                ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: Text(
-                '按住并拖拽，360° 观察正方体\n支持鼠标拖拽和手指滑动',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

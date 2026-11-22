@@ -1,0 +1,349 @@
+{
+  "source_html": "PlantMate_V6_Explore_Mushroom.html",
+  "reference_map": "Frame 7 (1).png",
+  "logical_map_size": [
+    675,
+    1292
+  ],
+  "terrain_blocks": [
+    {
+      "type": "path",
+      "x": 0,
+      "y": 0,
+      "w": 60,
+      "h": 586
+    },
+    {
+      "type": "path",
+      "x": 514,
+      "y": 0,
+      "w": 60,
+      "h": 253
+    },
+    {
+      "type": "water",
+      "x": 325,
+      "y": 0,
+      "w": 189,
+      "h": 194
+    },
+    {
+      "type": "path",
+      "x": 269,
+      "y": 194,
+      "w": 305,
+      "h": 59
+    },
+    {
+      "type": "path",
+      "x": 269,
+      "y": 253,
+      "w": 60,
+      "h": 333
+    },
+    {
+      "type": "path",
+      "x": 0,
+      "y": 586,
+      "w": 675,
+      "h": 60
+    },
+    {
+      "type": "path",
+      "x": 514,
+      "y": 646,
+      "w": 60,
+      "h": 207
+    },
+    {
+      "type": "path",
+      "x": 330,
+      "y": 793,
+      "w": 60,
+      "h": 186
+    },
+    {
+      "type": "water",
+      "x": 390,
+      "y": 853,
+      "w": 285,
+      "h": 126
+    },
+    {
+      "type": "path",
+      "x": 0,
+      "y": 979,
+      "w": 675,
+      "h": 61
+    },
+    {
+      "type": "path",
+      "x": 121,
+      "y": 1040,
+      "w": 60,
+      "h": 252
+    },
+    {
+      "type": "path",
+      "x": 615,
+      "y": 1040,
+      "w": 60,
+      "h": 252
+    }
+  ],
+  "sprites": [
+    {
+      "id": "stalk_top",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 256,
+      "y": 10,
+      "w": 56,
+      "h": 79,
+      "z": 3
+    },
+    {
+      "id": "stalk_upper_left",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 73,
+      "y": 100,
+      "w": 57,
+      "h": 80,
+      "z": 3
+    },
+    {
+      "id": "swirl_upper",
+      "file": "map_sprites/swirl.png",
+      "x": 341,
+      "y": 99,
+      "w": 88,
+      "h": 66,
+      "z": 3
+    },
+    {
+      "id": "stones_top",
+      "file": "map_sprites/stones.png",
+      "x": 429,
+      "y": 10,
+      "w": 70,
+      "h": 66,
+      "z": 3
+    },
+    {
+      "id": "bridge_top",
+      "file": "map_sprites/bridge.png",
+      "x": 479,
+      "y": 65,
+      "w": 111,
+      "h": 93,
+      "z": 3
+    },
+    {
+      "id": "ufo_top_left",
+      "file": "map_sprites/ufo_beam.png",
+      "x": 16,
+      "y": 212,
+      "w": 94,
+      "h": 116,
+      "z": 3
+    },
+    {
+      "id": "dog_left",
+      "file": "map_sprites/dog.png",
+      "x": 175,
+      "y": 318,
+      "w": 69,
+      "h": 72,
+      "z": 3
+    },
+    {
+      "id": "flower_cluster_01",
+      "file": "map_sprites/star_trio.png",
+      "x": 291,
+      "y": 268,
+      "w": 72,
+      "h": 59,
+      "z": 3
+    },
+    {
+      "id": "flower_cluster_02",
+      "file": "map_sprites/star_trio.png",
+      "x": 378,
+      "y": 266,
+      "w": 72,
+      "h": 59,
+      "z": 3
+    },
+    {
+      "id": "flower_cluster_03",
+      "file": "map_sprites/star_trio.png",
+      "x": 466,
+      "y": 266,
+      "w": 72,
+      "h": 59,
+      "z": 3
+    },
+    {
+      "id": "stalk_mid_left",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 72,
+      "y": 399,
+      "w": 57,
+      "h": 78,
+      "z": 3
+    },
+    {
+      "id": "stalk_upper_right",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 581,
+      "y": 346,
+      "w": 67,
+      "h": 90,
+      "z": 3
+    },
+    {
+      "id": "plantSlot",
+      "file": "map_sprites/plant.png",
+      "x": 184,
+      "y": 516,
+      "w": 154,
+      "h": 159,
+      "z": 5
+    },
+    {
+      "id": "eggSlot",
+      "file": "map_sprites/eggie.png",
+      "x": 397,
+      "y": 540,
+      "w": 107,
+      "h": 144,
+      "z": 5
+    },
+    {
+      "id": "stalk_left_lower",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 69,
+      "y": 748,
+      "w": 66,
+      "h": 88,
+      "z": 3
+    },
+    {
+      "id": "ufo_right",
+      "file": "map_sprites/ufo_beam.png",
+      "x": 453,
+      "y": 718,
+      "w": 96,
+      "h": 117,
+      "z": 3
+    },
+    {
+      "id": "stalk_right_lower",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 575,
+      "y": 755,
+      "w": 66,
+      "h": 91,
+      "z": 3
+    },
+    {
+      "id": "stalk_lower_left",
+      "file": "map_sprites/plant_stalk.png",
+      "x": 73,
+      "y": 1035,
+      "w": 60,
+      "h": 86,
+      "z": 3
+    },
+    {
+      "id": "bridge_bottom",
+      "file": "map_sprites/bridge.png",
+      "x": 292,
+      "y": 854,
+      "w": 117,
+      "h": 84,
+      "z": 3
+    },
+    {
+      "id": "stones_bottom",
+      "file": "map_sprites/stones.png",
+      "x": 433,
+      "y": 869,
+      "w": 72,
+      "h": 74,
+      "z": 3
+    },
+    {
+      "id": "swirl_bottom_right",
+      "file": "map_sprites/swirl.png",
+      "x": 569,
+      "y": 884,
+      "w": 90,
+      "h": 63,
+      "z": 3
+    },
+    {
+      "id": "trio_lower_1",
+      "file": "map_sprites/star_trio.png",
+      "x": 138,
+      "y": 910,
+      "w": 70,
+      "h": 55,
+      "z": 3
+    },
+    {
+      "id": "trio_lower_2",
+      "file": "map_sprites/star_trio.png",
+      "x": 212,
+      "y": 910,
+      "w": 70,
+      "h": 55,
+      "z": 3
+    },
+    {
+      "id": "bridge_lower_left",
+      "file": "map_sprites/bridge.png",
+      "x": 103,
+      "y": 1094,
+      "w": 116,
+      "h": 89,
+      "z": 3
+    },
+    {
+      "id": "fence_lower_1",
+      "file": "map_sprites/fence.png",
+      "x": 322,
+      "y": 1047,
+      "w": 99,
+      "h": 82,
+      "z": 3
+    },
+    {
+      "id": "fence_lower_2",
+      "file": "map_sprites/fence.png",
+      "x": 416,
+      "y": 1047,
+      "w": 99,
+      "h": 82,
+      "z": 3
+    },
+    {
+      "id": "fence_lower_3",
+      "file": "map_sprites/fence.png",
+      "x": 510,
+      "y": 1047,
+      "w": 99,
+      "h": 82,
+      "z": 3
+    },
+    {
+      "id": "dog_lower",
+      "file": "map_sprites/dog.png",
+      "x": 514,
+      "y": 1138,
+      "w": 93,
+      "h": 99,
+      "z": 3
+    }
+  ],
+  "explore_reward": "map_sprites/purple_mushroom.png (only appears after accepting exploration reward)"
+}

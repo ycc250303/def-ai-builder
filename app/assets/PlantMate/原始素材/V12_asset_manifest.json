@@ -1,0 +1,640 @@
+{
+  "project": "Plant Mate",
+  "version": "V12",
+  "standalone_html": "site/PlantMate_V12_Standalone.html",
+  "development_html": "site/PlantMate_V12_Development.html",
+  "asset_base": "site/assets/png/",
+  "embedded_images_total_usages": 42,
+  "unique_png_assets": 23,
+  "original_svg_sources": 19,
+  "changes_to_previous_html": [
+    "remove Awkward: 1",
+    "move food image 22px left: 1",
+    "move Zzz within map and above Eggie: 1",
+    "preserve eye-mask aspect ratio: 1",
+    "Replace mask image (only) from supplied screenshot, background cutout"
+  ],
+  "images": [
+    {
+      "filename": "stalk_top.png",
+      "sha256": "64399c01a5dca9d0946103ded96e8f50949f9e1860355859e4c6867f6517109f",
+      "mime": "image/png",
+      "size_bytes": 374631,
+      "width": 723,
+      "height": 1263,
+      "first_context": "stalk_top",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "stalk_top",
+          "category": "map",
+          "appearance_index": 0
+        },
+        {
+          "semantic": "stalk_upper_left",
+          "category": "map",
+          "appearance_index": 1
+        },
+        {
+          "semantic": "stalk_mid_left",
+          "category": "map",
+          "appearance_index": 10
+        },
+        {
+          "semantic": "stalk_upper_right",
+          "category": "map",
+          "appearance_index": 11
+        },
+        {
+          "semantic": "stalk_left_lower",
+          "category": "map",
+          "appearance_index": 14
+        },
+        {
+          "semantic": "stalk_right_lower",
+          "category": "map",
+          "appearance_index": 16
+        },
+        {
+          "semantic": "stalk_lower_left",
+          "category": "map",
+          "appearance_index": 17
+        }
+      ]
+    },
+    {
+      "filename": "swirl_upper.png",
+      "sha256": "f18eb9b9c114a207461c4bc789151909004bb8c5121dd9e4742a37b8778cb74f",
+      "mime": "image/png",
+      "size_bytes": 337417,
+      "width": 926,
+      "height": 728,
+      "first_context": "swirl_upper",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "swirl_upper",
+          "category": "map",
+          "appearance_index": 2
+        },
+        {
+          "semantic": "swirl_bottom_right",
+          "category": "map",
+          "appearance_index": 20
+        }
+      ]
+    },
+    {
+      "filename": "stones_top.png",
+      "sha256": "2f91572ea41605e6461394acd2c19c3f9ffce9539631d3dbf1b8f943107c169e",
+      "mime": "image/png",
+      "size_bytes": 269433,
+      "width": 718,
+      "height": 911,
+      "first_context": "stones_top",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "stones_top",
+          "category": "map",
+          "appearance_index": 3
+        },
+        {
+          "semantic": "stones_bottom",
+          "category": "map",
+          "appearance_index": 19
+        }
+      ]
+    },
+    {
+      "filename": "bridge_top.png",
+      "sha256": "248fe7aeecdfaa5c0bf9f90f859d4888540fc27a34213da281e34e9f6aa2896b",
+      "mime": "image/png",
+      "size_bytes": 84793,
+      "width": 414,
+      "height": 256,
+      "first_context": "bridge_top",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "bridge_top",
+          "category": "map",
+          "appearance_index": 4
+        },
+        {
+          "semantic": "bridge_bottom",
+          "category": "map",
+          "appearance_index": 18
+        },
+        {
+          "semantic": "bridge_lower_left",
+          "category": "map",
+          "appearance_index": 23
+        }
+      ]
+    },
+    {
+      "filename": "ufo_top_left.png",
+      "sha256": "71df9dbe6422e26726d958054a5abe9d8b9cd81bb22192a11cbeafa53e9ecc52",
+      "mime": "image/png",
+      "size_bytes": 524142,
+      "width": 726,
+      "height": 842,
+      "first_context": "ufo_top_left",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "ufo_top_left",
+          "category": "map",
+          "appearance_index": 5
+        },
+        {
+          "semantic": "ufo_right",
+          "category": "map",
+          "appearance_index": 15
+        }
+      ]
+    },
+    {
+      "filename": "dog_left.png",
+      "sha256": "2dbf88bd2ac38741dcedb3bcea837c6f8150cebe46545ad3241d5101a725a5c7",
+      "mime": "image/png",
+      "size_bytes": 374614,
+      "width": 788,
+      "height": 816,
+      "first_context": "dog_left",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "dog_left",
+          "category": "map",
+          "appearance_index": 6
+        },
+        {
+          "semantic": "dog_lower",
+          "category": "map",
+          "appearance_index": 27
+        }
+      ]
+    },
+    {
+      "filename": "flower_cluster_01.png",
+      "sha256": "49d845d873c0af1a3a85f57bdef65552dd8c8122dd90aa34b73e6d0c8d603ec3",
+      "mime": "image/png",
+      "size_bytes": 499377,
+      "width": 1159,
+      "height": 882,
+      "first_context": "flower_cluster_01",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "flower_cluster_01",
+          "category": "map",
+          "appearance_index": 7
+        },
+        {
+          "semantic": "flower_cluster_02",
+          "category": "map",
+          "appearance_index": 8
+        },
+        {
+          "semantic": "flower_cluster_03",
+          "category": "map",
+          "appearance_index": 9
+        },
+        {
+          "semantic": "trio_lower_1",
+          "category": "map",
+          "appearance_index": 21
+        },
+        {
+          "semantic": "trio_lower_2",
+          "category": "map",
+          "appearance_index": 22
+        }
+      ]
+    },
+    {
+      "filename": "tuantuan.png",
+      "sha256": "9cfe1848d2bd3353046befef952f1507318f899592eab6ead4a828fcec764bb7",
+      "mime": "image/png",
+      "size_bytes": 553951,
+      "width": 1009,
+      "height": 1074,
+      "first_context": "tuantuan",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "tuantuan",
+          "category": "map",
+          "appearance_index": 12
+        }
+      ]
+    },
+    {
+      "filename": "eggie.png",
+      "sha256": "19748e5802a0f17369d2981f2bcec54a8cfb08a04bf48025d71d22d15e6dc35a",
+      "mime": "image/png",
+      "size_bytes": 466752,
+      "width": 772,
+      "height": 1055,
+      "first_context": "eggie",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "eggie",
+          "category": "map",
+          "appearance_index": 13
+        }
+      ]
+    },
+    {
+      "filename": "fence_lower_1.png",
+      "sha256": "d9147958d4a283473839bcd9623a2e918d4a538cf5a019628aa38b6841b11a66",
+      "mime": "image/png",
+      "size_bytes": 491923,
+      "width": 1226,
+      "height": 657,
+      "first_context": "fence_lower_1",
+      "first_category": "map",
+      "used_by": [
+        {
+          "semantic": "fence_lower_1",
+          "category": "map",
+          "appearance_index": 24
+        },
+        {
+          "semantic": "fence_lower_2",
+          "category": "map",
+          "appearance_index": 25
+        },
+        {
+          "semantic": "fence_lower_3",
+          "category": "map",
+          "appearance_index": 26
+        }
+      ]
+    },
+    {
+      "filename": "food_fried_egg.png",
+      "sha256": "3a35ef28b67724651a57e51b988a9dc8f4b5474fcd8abeb0b7249122dfd01e93",
+      "mime": "image/png",
+      "size_bytes": 62179,
+      "width": 706,
+      "height": 707,
+      "first_context": "food_fried_egg",
+      "first_category": "effects",
+      "used_by": [
+        {
+          "semantic": "food_fried_egg",
+          "category": "effects",
+          "appearance_index": 28
+        }
+      ]
+    },
+    {
+      "filename": "bubble_cluster.png",
+      "sha256": "f6767d7b992a7f46b48ba5ba52ebb6a2e242175850da31e218f0bcf3bc6a6976",
+      "mime": "image/png",
+      "size_bytes": 511,
+      "width": 96,
+      "height": 75,
+      "first_context": "bubble_cluster",
+      "first_category": "effects",
+      "used_by": [
+        {
+          "semantic": "bubble_cluster",
+          "category": "effects",
+          "appearance_index": 29
+        }
+      ]
+    },
+    {
+      "filename": "eyemask_original_cutout.png",
+      "sha256": "2ab50012a54c90deb7fd7f50ed7dfdcb18c8a1bb3c549557b4219d4da1ec8dbf",
+      "mime": "image/png",
+      "size_bytes": 11833,
+      "width": 257,
+      "height": 190,
+      "first_context": "eyemask_original_cutout",
+      "first_category": "effects",
+      "used_by": [
+        {
+          "semantic": "eyemask_original_cutout",
+          "category": "effects",
+          "appearance_index": 30
+        }
+      ]
+    },
+    {
+      "filename": "eggie_avatar.png",
+      "sha256": "97191e168fac766b3687efc3b62f2961cf95a476477255f32a681fd7d02caee4",
+      "mime": "image/png",
+      "size_bytes": 476705,
+      "width": 1159,
+      "height": 1161,
+      "first_context": "eggie_avatar",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "eggie_avatar",
+          "category": "ui",
+          "appearance_index": 31
+        },
+        {
+          "semantic": "eggie",
+          "category": "ui",
+          "appearance_index": 34
+        }
+      ]
+    },
+    {
+      "filename": "exploration_mushroom.png",
+      "sha256": "81f34aecef8b6f61b3f4331f08cd4cc4cbab1a98e501986d9298e042580dbb35",
+      "mime": "image/png",
+      "size_bytes": 29507,
+      "width": 181,
+      "height": 213,
+      "first_context": "exploration_mushroom",
+      "first_category": "map_reward",
+      "used_by": [
+        {
+          "semantic": "exploration_mushroom",
+          "category": "map_reward",
+          "appearance_index": 32
+        }
+      ]
+    },
+    {
+      "filename": "baybi.png",
+      "sha256": "8fb6df46bdfae911d2f47c78adc8cf6256ebf1d2b35e176cffeb5cf1adc298a8",
+      "mime": "image/png",
+      "size_bytes": 363366,
+      "width": 1290,
+      "height": 1129,
+      "first_context": "baybi",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "baybi",
+          "category": "ui",
+          "appearance_index": 33
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette.png",
+      "sha256": "8ec23cf975e97bab19f796c0c0ac019b52ce29cf2b755a802c4dc1ca1a348b45",
+      "mime": "image/png",
+      "size_bytes": 282,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 35
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette_714f2b.png",
+      "sha256": "629924982750965b4052ebccc6caf8c5bef8c28b9fd85470d90f3959f79f8cc9",
+      "mime": "image/png",
+      "size_bytes": 289,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 36
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette_6930c0.png",
+      "sha256": "fcd08f97249d8ea2f04d06d4680cf5c55080671a128ffcd9e19659c3f45aff4f",
+      "mime": "image/png",
+      "size_bytes": 276,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 37
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette_5ddea4.png",
+      "sha256": "60d63aca733519f25b952b839b7390a9edd429b61224f068331cc1a68be9ad12",
+      "mime": "image/png",
+      "size_bytes": 299,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 38
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette_c70b96.png",
+      "sha256": "d222cfa449e638750bc900bf9816e14c62b1ed0ea973abef5654a352d107887c",
+      "mime": "image/png",
+      "size_bytes": 269,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 39
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette_da7008.png",
+      "sha256": "1938ab9ca11da0bb3a5d2bb8e6c06d4cbdd636e70a992e002856e3b709adffdc",
+      "mime": "image/png",
+      "size_bytes": 228,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 40
+        }
+      ]
+    },
+    {
+      "filename": "unknown_evolution_silhouette_ae3c53.png",
+      "sha256": "914ba8f825e11720334745b1df9f544515b44a02877089bd98ec9882076e29f5",
+      "mime": "image/png",
+      "size_bytes": 318,
+      "width": 32,
+      "height": 32,
+      "first_context": "unknown_evolution_silhouette",
+      "first_category": "ui",
+      "used_by": [
+        {
+          "semantic": "unknown_evolution_silhouette",
+          "category": "ui",
+          "appearance_index": 41
+        }
+      ]
+    }
+  ],
+  "svg_sources": [
+    {
+      "filename": "original_map_asset_01.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_17-1 3.svg",
+      "size_bytes": 981125,
+      "contains_base64": true,
+      "sha256": "750a0c5ed32617e4f20c271eb696f87d09d9b7c1f2d88c3155bd35854ff293ed"
+    },
+    {
+      "filename": "original_map_asset_02.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_20-2 3.svg",
+      "size_bytes": 848285,
+      "contains_base64": true,
+      "sha256": "42c41fcd2dcad1596d1d0717131a230b14aa62a965436e0458f6dbdbd27f1dc1"
+    },
+    {
+      "filename": "original_map_asset_03.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午01_27_15-6 7.svg",
+      "size_bytes": 870831,
+      "contains_base64": true,
+      "sha256": "f0d84cf2722d07cec0497b43408a29c934187536fcc6cbd894283b0b6c4dd33e"
+    },
+    {
+      "filename": "original_map_asset_04.svg",
+      "original_name": "像素風外星飛碟光束 3.svg",
+      "size_bytes": 1808181,
+      "contains_base64": true,
+      "sha256": "1985aa6d93e95af550f4f37e7263c3d6622c88bd34f78a4592bef2dc0488b696"
+    },
+    {
+      "filename": "original_map_asset_05.svg",
+      "original_name": "粉彩像素花園素材圖集 6.svg",
+      "size_bytes": 1609716,
+      "contains_base64": true,
+      "sha256": "4ab41b4cc0304119354be2095b7c46a19b95878c486414f0b4dbca8fed17f8ec"
+    },
+    {
+      "filename": "original_map_asset_06.svg",
+      "original_name": "ChatGPT 圖像 2026年11月21日 下午10_19_06-2 3.svg",
+      "size_bytes": 1102828,
+      "contains_base64": true,
+      "sha256": "698dd1af300028b55993382138b971f603a2d4c1fef3a1ac4fda450ab0f39832"
+    },
+    {
+      "filename": "original_map_asset_07.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午01_27_01-1 2.svg",
+      "size_bytes": 608790,
+      "contains_base64": true,
+      "sha256": "92e123b6d867b0b75c0dacf50ed239e93d6d62f690322fcd7c8093f9b274180d"
+    },
+    {
+      "filename": "original_map_asset_08.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午01_27_06-3 2.svg",
+      "size_bytes": 730382,
+      "contains_base64": true,
+      "sha256": "7e2d2dc4a55b4fe940b830706d5b25e5e44130c572102368359ac1ce45307aea"
+    },
+    {
+      "filename": "original_map_asset_09.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午01_27_10-4 2.svg",
+      "size_bytes": 890271,
+      "contains_base64": true,
+      "sha256": "63f9340ba569cb5da37d03cb029693985932ea2ed95c0954a402f42080c93f10"
+    },
+    {
+      "filename": "original_map_asset_10.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午01_27_12-5 2.svg",
+      "size_bytes": 671219,
+      "contains_base64": true,
+      "sha256": "1635c8d19ddc540ce50450f334c89cbe1496f29ed1dd66cdb04fe978e20c3787"
+    },
+    {
+      "filename": "original_map_asset_11.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午01_27_17-7 2.svg",
+      "size_bytes": 505231,
+      "contains_base64": true,
+      "sha256": "efa4bf469fa0d60deedd712555f201e2492cf61069ea7e763071bf2a9e1b9bc9"
+    },
+    {
+      "filename": "original_map_asset_12.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_24-3 1.svg",
+      "size_bytes": 921414,
+      "contains_base64": true,
+      "sha256": "b73a553f3cf8e55c566fc54b1a5894766abfe6d755cf57e105c548deeb04c2bd"
+    },
+    {
+      "filename": "original_map_asset_13.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_27-4 1.svg",
+      "size_bytes": 683818,
+      "contains_base64": true,
+      "sha256": "ccf78ea018c25c2566eec3e2c30c8ddba0305c4a46882dee0050b97b3015f711"
+    },
+    {
+      "filename": "original_map_asset_14.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_30-5 1.svg",
+      "size_bytes": 941841,
+      "contains_base64": true,
+      "sha256": "b23c9809dd6f1f8d1e41096c413984e510d4ed57a2749db94392a7e1151451bb"
+    },
+    {
+      "filename": "original_map_asset_15.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_33-6 1.svg",
+      "size_bytes": 1081386,
+      "contains_base64": true,
+      "sha256": "50225cbfa2408523e5722d0ab33a844b332f18078bcd8d431a37c560177ca5eb"
+    },
+    {
+      "filename": "original_map_asset_16.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_37-7 1.svg",
+      "size_bytes": 1165538,
+      "contains_base64": true,
+      "sha256": "5a22763b0fd8fab3f6bf66d2e10d54a5e3eb6a56b43aad2f198d57f994ab06c7"
+    },
+    {
+      "filename": "original_map_asset_17.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_40-8 1.svg",
+      "size_bytes": 1021942,
+      "contains_base64": true,
+      "sha256": "130604b4e2339602a7cc5474caabe15b05acd237fdc829ebe9038ff35687bae0"
+    },
+    {
+      "filename": "original_map_asset_18.svg",
+      "original_name": "ChatGPT 圖像 2026年11月22日 上午02_22_43-9 1.svg",
+      "size_bytes": 748218,
+      "contains_base64": true,
+      "sha256": "b7c3fec2b9ca8efc693437521e33eafb133db337a6995523a2dd865ca6c03422"
+    },
+    {
+      "filename": "original_map_asset_19.svg",
+      "original_name": "粉紅螺旋小幽靈 1.svg",
+      "size_bytes": 646062,
+      "contains_base64": true,
+      "sha256": "41cd986e4ae83db2a0fde2ac027493d1382a998f775ea46c54ac49f4005991e5"
+    }
+  ]
+}

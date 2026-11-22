@@ -1,0 +1,166 @@
+{
+  "garden_source": "V12 Standalone exact unchanged bytes",
+  "garden_sha256": "6be977e4a720825ef52dabc2bcc83c3c512134507a6413f73983bd26bc2c8627",
+  "tab_logic": "Garden V12 authoritative; synced to Social/Me every 650 ms",
+  "behavior": [
+    "FEED",
+    "CLEAN",
+    "PLAY",
+    "EXPLORE",
+    "REST"
+  ],
+  "behavior_cycle_seconds": 15,
+  "initial_stats": {
+    "food": 45,
+    "mood": 50,
+    "energy": 73,
+    "clean": 65,
+    "xp": 12,
+    "level": 1
+  },
+  "garden_assets": 23,
+  "files": {
+    "原始素材/V12_asset_manifest.json": "35878b08bff4f3176d838a182f1272a5a90788e5400dfc149d22aa3cabbf3fc7",
+    "原始素材/V12_map_manifest_reference.json": "b49f677cae69f630916cb8140a7e4b124895898e2ccecc9dcfcee99ce1915f13",
+    "原始素材/V12_原始交接说明.md": "f31ceb342a599c4ca1b44bd97724274e817bd62235d2dc699d2e3835e12ab372",
+    "网页/index.html": "66cbda94a0be2c85f1ddaa7a9b3e05347a02038bf5232186bcb64a5d6cc32074",
+    "网页/bridge.js": "37c3981382b5cd824a29e05298d024cd1715b28f8fcf6ee790f02e7c873da2cf",
+    "开发源码/social_adapter.js": "aac10824f8173a6598d8672dd16b9b2f36671e42e27e0c5c273af2e00ba78360",
+    "开发源码/hub.js": "37c3981382b5cd824a29e05298d024cd1715b28f8fcf6ee790f02e7c873da2cf",
+    "开发源码/me_adapter.js": "757b73b483d42c731f1ddf5075164914ed08afbd8c36c82d08f4309a09146728",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_18.svg": "b7c3fec2b9ca8efc693437521e33eafb133db337a6995523a2dd865ca6c03422",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_19.svg": "41cd986e4ae83db2a0fde2ac027493d1382a998f775ea46c54ac49f4005991e5",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_16.svg": "5a22763b0fd8fab3f6bf66d2e10d54a5e3eb6a56b43aad2f198d57f994ab06c7",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_12.svg": "b73a553f3cf8e55c566fc54b1a5894766abfe6d755cf57e105c548deeb04c2bd",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_04.svg": "1985aa6d93e95af550f4f37e7263c3d6622c88bd34f78a4592bef2dc0488b696",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_03.svg": "f0d84cf2722d07cec0497b43408a29c934187536fcc6cbd894283b0b6c4dd33e",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_01.svg": "750a0c5ed32617e4f20c271eb696f87d09d9b7c1f2d88c3155bd35854ff293ed",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_06.svg": "698dd1af300028b55993382138b971f603a2d4c1fef3a1ac4fda450ab0f39832",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_11.svg": "efa4bf469fa0d60deedd712555f201e2492cf61069ea7e763071bf2a9e1b9bc9",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_17.svg": "130604b4e2339602a7cc5474caabe15b05acd237fdc829ebe9038ff35687bae0",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_05.svg": "4ab41b4cc0304119354be2095b7c46a19b95878c486414f0b4dbca8fed17f8ec",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_08.svg": "7e2d2dc4a55b4fe940b830706d5b25e5e44130c572102368359ac1ce45307aea",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_02.svg": "42c41fcd2dcad1596d1d0717131a230b14aa62a965436e0458f6dbdbd27f1dc1",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_09.svg": "63f9340ba569cb5da37d03cb029693985932ea2ed95c0954a402f42080c93f10",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_13.svg": "ccf78ea018c25c2566eec3e2c30c8ddba0305c4a46882dee0050b97b3015f711",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_15.svg": "50225cbfa2408523e5722d0ab33a844b332f18078bcd8d431a37c560177ca5eb",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_07.svg": "92e123b6d867b0b75c0dacf50ed239e93d6d62f690322fcd7c8093f9b274180d",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_14.svg": "b23c9809dd6f1f8d1e41096c413984e510d4ed57a2749db94392a7e1151451bb",
+    "原始素材/V12_地图源文件与参考/original_svg/original_map_asset_10.svg": "1635c8d19ddc540ce50450f334c89cbe1496f29ed1dd66cdb04fe978e20c3787",
+    "原始素材/V12_地图源文件与参考/references/approved_map_reference.png": "3b8a584c868671c9d96d3e00579e7c4776d3de52348e631ee8ef21e79e75e908",
+    "原始素材/V12_地图源文件与参考/references/eyemask_background_removed.png": "2ab50012a54c90deb7fd7f50ed7dfdcb18c8a1bb3c549557b4219d4da1ec8dbf",
+    "原始素材/V12_地图源文件与参考/references/eyemask_reference_original.png": "07ae15c9c96ee16f1acb12d61bea5c3c6eeabaaf4299036fd7ce0619d81dad2b",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette_714f2b.png": "629924982750965b4052ebccc6caf8c5bef8c28b9fd85470d90f3959f79f8cc9",
+    "原始素材/V12_Garden_全部PNG/png/eggie.png": "19748e5802a0f17369d2981f2bcec54a8cfb08a04bf48025d71d22d15e6dc35a",
+    "原始素材/V12_Garden_全部PNG/png/dog_left.png": "2dbf88bd2ac38741dcedb3bcea837c6f8150cebe46545ad3241d5101a725a5c7",
+    "原始素材/V12_Garden_全部PNG/png/eyemask_original_cutout.png": "2ab50012a54c90deb7fd7f50ed7dfdcb18c8a1bb3c549557b4219d4da1ec8dbf",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette_6930c0.png": "fcd08f97249d8ea2f04d06d4680cf5c55080671a128ffcd9e19659c3f45aff4f",
+    "原始素材/V12_Garden_全部PNG/png/exploration_mushroom.png": "81f34aecef8b6f61b3f4331f08cd4cc4cbab1a98e501986d9298e042580dbb35",
+    "原始素材/V12_Garden_全部PNG/png/flower_cluster_01.png": "49d845d873c0af1a3a85f57bdef65552dd8c8122dd90aa34b73e6d0c8d603ec3",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette_da7008.png": "1938ab9ca11da0bb3a5d2bb8e6c06d4cbdd636e70a992e002856e3b709adffdc",
+    "原始素材/V12_Garden_全部PNG/png/bridge_top.png": "248fe7aeecdfaa5c0bf9f90f859d4888540fc27a34213da281e34e9f6aa2896b",
+    "原始素材/V12_Garden_全部PNG/png/eggie_avatar.png": "97191e168fac766b3687efc3b62f2961cf95a476477255f32a681fd7d02caee4",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette_5ddea4.png": "60d63aca733519f25b952b839b7390a9edd429b61224f068331cc1a68be9ad12",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette_ae3c53.png": "914ba8f825e11720334745b1df9f544515b44a02877089bd98ec9882076e29f5",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette_c70b96.png": "d222cfa449e638750bc900bf9816e14c62b1ed0ea973abef5654a352d107887c",
+    "原始素材/V12_Garden_全部PNG/png/food_fried_egg.png": "3a35ef28b67724651a57e51b988a9dc8f4b5474fcd8abeb0b7249122dfd01e93",
+    "原始素材/V12_Garden_全部PNG/png/bubble_cluster.png": "f6767d7b992a7f46b48ba5ba52ebb6a2e242175850da31e218f0bcf3bc6a6976",
+    "原始素材/V12_Garden_全部PNG/png/baybi.png": "8fb6df46bdfae911d2f47c78adc8cf6256ebf1d2b35e176cffeb5cf1adc298a8",
+    "原始素材/V12_Garden_全部PNG/png/stalk_top.png": "64399c01a5dca9d0946103ded96e8f50949f9e1860355859e4c6867f6517109f",
+    "原始素材/V12_Garden_全部PNG/png/tuantuan.png": "9cfe1848d2bd3353046befef952f1507318f899592eab6ead4a828fcec764bb7",
+    "原始素材/V12_Garden_全部PNG/png/ufo_top_left.png": "71df9dbe6422e26726d958054a5abe9d8b9cd81bb22192a11cbeafa53e9ecc52",
+    "原始素材/V12_Garden_全部PNG/png/fence_lower_1.png": "d9147958d4a283473839bcd9623a2e918d4a538cf5a019628aa38b6841b11a66",
+    "原始素材/V12_Garden_全部PNG/png/unknown_evolution_silhouette.png": "8ec23cf975e97bab19f796c0c0ac019b52ce29cf2b755a802c4dc1ca1a348b45",
+    "原始素材/V12_Garden_全部PNG/png/stones_top.png": "2f91572ea41605e6461394acd2c19c3f9ffce9539631d3dbf1b8f943107c169e",
+    "原始素材/V12_Garden_全部PNG/png/swirl_upper.png": "f18eb9b9c114a207461c4bc789151909004bb8c5121dd9e4742a37b8778cb74f"
+  },
+  "shared_assets_count": 20,
+  "shared_asset_sha256": {
+    "239a8383c9260e": "239a8383c9260e66fef9cf5243f560a66265011b5e2f032aed3a65f3718c49d0",
+    "7d54984276b301": "7d54984276b3010080718eed63b12a4bafc6b4ae7cbca7253e08dfd9c55b0b68",
+    "0be3185d4500bf": "0be3185d4500bf0a4b98182aefe7535bd8c852398f758f10e0141ea1088f95d8",
+    "f46d9fb506247d": "f46d9fb506247d82d5e9e9248bf0283da19d64e9477569724088511236297a25",
+    "7ff34f3b56aa28": "7ff34f3b56aa28a94ffbf2fc4c5b3c061de3742b8535c44c426e0d93da81821a",
+    "adc4082297d859": "adc4082297d859787f63d6a3d94b9ee3aa6a51259996b8e990e39628b0fb1fcd",
+    "6414f91dfddfaa": "6414f91dfddfaae09c439f5b44ac2db4fd511901ee1a8b9cd97f3b58474931fa",
+    "ec5d086d5b8352": "ec5d086d5b8352b3faf8925787f0868b40624c24b7aebd0e8b92316c830dc5c8",
+    "78b451a1c6970b": "78b451a1c6970b2a5e5913010ef9893e47bbd89827e8dd1c0d21def799d70f81",
+    "5e460636b97fd8": "5e460636b97fd8e6aefb75bc82dc90408a0d29e6ddbc3f2fdc293ab8e6f09829",
+    "2bb819d5e33e6e": "2bb819d5e33e6ea99341a743b24cf2785e59eb0d67bdd3134a78c1c2ef03801d",
+    "03477dbf736955": "03477dbf73695572702d1659934a1f81c9ef3ac34871bbfcd8e8cfcfb361d65d",
+    "c72969bab82154": "c72969bab82154b594dc6cd045164c2b4f681cb4910ebe9ec6e2a5f46aa10859",
+    "88e687410f81f2": "88e687410f81f22d19efa1947e49222074c611f89a9bc3441600d0774074b75b",
+    "bb7b8726e29a55": "bb7b8726e29a552c28760435912ed3c84f433ed3f04863583d83cff02ee4ee16",
+    "f8e8a224deafd4": "f8e8a224deafd49876050e91dfb1c42460650fca03ff49f837e3415986552d92",
+    "c48abdf2a8df49": "c48abdf2a8df491d962f5ccca0442b2617e9ca660660b7a66fd7de56e4727c10",
+    "92b070170449b4": "92b070170449b4f7de6af861a638b5f16edcbf41de2df333410c83245e51b88e",
+    "b0185b301a515a": "b0185b301a515add3fb6ca84f85305a584b63fcbc029beab585fbdb104f2996c",
+    "ca018d5403c61e": "ca018d5403c61e2af57e0b9479c9c27f7e04e742c29eef0a47aee34c427bf239"
+  },
+  "single_file_bytes": 44178469,
+  "page1_unmodified_checksum_matches": true,
+  "garden_source_sha256": "6be977e4a720825ef52dabc2bcc83c3c512134507a6413f73983bd26bc2c8627",
+  "garden_original_identical": true,
+  "social_me_shared_assets_unique": 20,
+  "interaction_tests": {
+    "tests": [
+      {
+        "name": "三模块完整加载",
+        "pass": true
+      },
+      {
+        "name": "V12 初始等级 Lv.1 XP 12",
+        "pass": true
+      },
+      {
+        "name": "Page 1 原生导航到 Social",
+        "pass": true
+      },
+      {
+        "name": "Social 当前用户来自 V12 hi",
+        "pass": true
+      },
+      {
+        "name": "Social 收藏同步至 Hub",
+        "pass": true
+      },
+      {
+        "name": "Social 导航 Me",
+        "pass": true
+      },
+      {
+        "name": "Me 显示 V12 Lv.1",
+        "pass": true
+      },
+      {
+        "name": "Me 保存列表同步 Social",
+        "pass": true
+      },
+      {
+        "name": "Me 宠物 4 属性与 V12 一致",
+        "pass": true
+      },
+      {
+        "name": "V12 结算后 Me 属性实时更新",
+        "pass": true
+      },
+      {
+        "name": "成长日记记录 V12 结算",
+        "pass": true
+      },
+      {
+        "name": "访问权限同步到 Social",
+        "pass": true
+      },
+      {
+        "name": "Me 底部返回原样 Garden",
+        "pass": true
+      },
+      {
+        "name": "浏览器无 JS 错误",
+        "pass": true
+      }
+    ],
+    "errors": []
+  }
+}
