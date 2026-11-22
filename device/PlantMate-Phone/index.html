@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PlantMate · 植物监测</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f3ea;color:#20352b;font:16px/1.5 system-ui,sans-serif}main{max-width:830px;margin:auto;padding:clamp(20px,5vw,52px)}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}header strong{letter-spacing:.03em}#status{border:1px solid #c5d0c0;border-radius:30px;padding:5px 12px;font-size:13px;color:#355c41}.hero{background:#203e32;color:#f5f5e9;border-radius:24px;padding:clamp(24px,6vw,44px);margin-bottom:26px}.hero p{color:#d1decd;margin:0}h1{font-size:clamp(34px,8vw,60px);line-height:1.18;margin:0 0 8px}h2{font-size:19px;margin:0 0 12px}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:23px}.metric{background:#fffdf6;border:1px solid #dce2d6;border-radius:15px;padding:14px;min-width:0}.metric span{display:block;color:#496254;font-size:13px}.metric strong{display:block;margin-top:4px;font-size:clamp(17px,4vw,29px);overflow-wrap:anywhere}.command{border-top:1px solid #c5d0c0;padding-top:16px}.command p{margin:0;overflow-wrap:anywhere}footer{margin-top:20px;color:#496254;font-size:13px}
+</style>
+</head>
+<body><main>
+<header><strong>PlantMate</strong><span id="status" role="status">连接中</span></header>
+<section class="hero"><h1>植物监测</h1><p id="source">等待 ESP-Mosaico 数据</p></section>
+<section aria-labelledby="sensors"><h2 id="sensors">传感器读数</h2><div class="metrics">
+<div class="metric"><span>温度</span><strong id="temperature">—</strong></div>
+<div class="metric"><span>空气湿度</span><strong id="humidity">—</strong></div>
+<div class="metric"><span>光照</span><strong id="light">—</strong></div>
+<div class="metric"><span>土壤输入</span><strong id="soil">—</strong></div>
+<div class="metric"><span>触摸状态</span><strong id="touch">—</strong></div>
+<div class="metric"><span>触摸电极</span><strong id="electrodes">—</strong></div>
+</div></section>
+<section class="command"><h2>最近一条设备指令</h2><p id="command" aria-live="polite">—</p></section>
+<footer id="updated">等待首次采样</footer>
+</main>
+<script>
+const set = (id, value) => {
+  const element = document.getElementById(id);
+  if (element.textContent !== value) element.textContent = value;
+};
+const reading = (value, unit) => Number.isFinite(value) ? value.toFixed(1) + ' ' + unit : '不可用';
+let lastSequence;
+let lastChange;
+let hasData = false;
+async function poll() {
+  try {
+    const response = await fetch('/api/state', { cache: 'no-store', signal: AbortSignal.timeout(3500) });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const { source, sequence, sensors, command } = await response.json();
+    set('temperature', reading(sensors.temperature_c, '°C'));
+    set('humidity', reading(sensors.humidity_rh, '%RH'));
+    set('light', reading(sensors.light_lux, 'lux'));
+    set('soil', ({ low: '闭合 · LOW', high: '开路 · HIGH' })[sensors.soil_level] ?? '不可用');
+    const mask = sensors.touch_mask;
+    const validMask = Number.isInteger(mask) && mask >= 0 && mask <= 4095;
+    set('touch', validMask ? (mask ? '已触摸' : '未触摸') : '不可用');
+    set('electrodes', validMask ? (Array.from({ length: 12 }, (_, index) => index)
+      .filter(index => mask & (1 << index)).map(index => 'ELE' + index).join('、') || '无') : '不可用');
+    set('command', command ? '#' + command.id + ' · ' + command.code : '暂无指令');
+    set('source', source === 'simulation' ? '模拟数据 · 用于验证手机界面' : 'ESP-Mosaico · 设备数据');
+    if (sequence !== lastSequence) {
+      lastSequence = sequence;
+      lastChange = Date.now();
+      set('updated', '最近一次新采样 ' + new Date().toLocaleTimeString('zh-CN'));
+    }
+    hasData = true;
+    set('status', Date.now() - lastChange > 6000 ? '采样停滞' : '已连接');
+  } catch {
+    set('status', hasData ? '连接中断 · 保留上次读数' : '等待数据 · 正在重试');
+  } finally {
+    setTimeout(poll, 1000);
+  }
+}
+poll();
+</script>
+</body>
+</html>

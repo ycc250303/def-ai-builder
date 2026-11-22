@@ -1,0 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+#pragma once
+#include "driver/i2c_master.h"
+
+esp_err_t mpr121_init(i2c_master_dev_handle_t dev);
+esp_err_t mpr121_read(i2c_master_dev_handle_t dev, uint16_t *channels);

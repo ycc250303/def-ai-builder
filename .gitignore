@@ -1,0 +1,23 @@
+# Local repository instructions
+
+
+# Hardware build outputs and generated dependencies
+/device/**/build/
+/device/**/build-*/
+/device/**/cmake-build-*/
+/device/**/CMakeFiles/
+/device/**/CMakeCache.txt
+/device/**/compile_commands.json
+/device/**/managed_components/
+/device/**/sdkconfig.old
+/device/**/.pio/
+
+# Hardware tool and interpreter caches
+/device/**/ccache/
+/device/**/zig-cache/
+/device/**/.zig-cache/
+/device/**/pip-cache/
+/device/**/.pytest_cache/
+/device/**/__pycache__/
+/device/**/*.py[cod]
+/device/**/host-state/

@@ -1,0 +1,24 @@
+menu "Plant sensor monitor"
+
+config PLANT_MPR121_ADDRESS
+    hex "MPR121 7-bit address"
+    range 0x5a 0x5d
+    default 0x5a
+    help
+        Match the physical ADDR wiring. V1.0 reserves 0x5A for the LCD touch
+        controller. The monitor also reserves 0x5C for BH1750. Use 0x5B
+        (ADDR to 3.3 V) or 0x5D (ADDR to SCL) when needed.
+
+choice PLANT_SOIL_POLARITY
+    prompt "Soil relay polarity"
+    default PLANT_SOIL_UNCALIBRATED
+
+config PLANT_SOIL_UNCALIBRATED
+    bool "Uncalibrated (report raw contact only)"
+config PLANT_SOIL_LOW_DRY
+    bool "Closed contact (GPIO low) means dry"
+config PLANT_SOIL_HIGH_DRY
+    bool "Open contact (GPIO high) means dry"
+endchoice
+
+endmenu
