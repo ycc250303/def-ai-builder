@@ -121,7 +121,7 @@ jobs:
         run: |
           set -euo pipefail
           flutter pub get
-          flutter build apk --release --dart-define=API_BASE_URL=http://8.155.138.61:8082
+          flutter build apk --release
 
       - name: 确认安装包未开启调试
         run: |
@@ -154,4 +154,4 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "Android 安装包 ${short}" \
             --latest \
-            --notes "main 提交 ${GITHUB_SHA} 的正式 Android 安装包。后端地址为 http://8.155.138.61:8082。"
+            --notes "main 提交 ${GITHUB_SHA} 的正式 Android 安装包。"

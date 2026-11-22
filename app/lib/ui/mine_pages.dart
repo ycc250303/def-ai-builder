@@ -11,7 +11,7 @@ class MinePage extends StatelessWidget {
   const MinePage({super.key});
   @override
   Widget build(BuildContext context) {
-    final d = AppScope.of(context).data, g = d.selected;
+    final d = AppScope.of(context).data, g = d.selectedGarden;
     Widget tile(
       String title,
       String subtitle,
@@ -110,80 +110,83 @@ class MinePage extends StatelessWidget {
           SectionLabel(
             context.l.myCompanions,
             trailing: TextButton(
-              onPressed: () => selectPlant(context),
+              onPressed: g == null ? null : () => selectPlant(context),
               child: Text(
                 context.l.switchPlant,
                 style: const TextStyle(fontSize: 11),
               ),
             ),
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              tile(
-                context.l.plants,
-                g.name,
-                'tuantuan',
-                const Color(0xffd5f2da),
-                const PlantsPage(),
-              ),
-              const SizedBox(width: 10),
-              tile(
-                context.l.pet,
-                '${g.pet.name} · Lv.${g.pet.level}',
-                g.pet.formId,
-                const Color(0xfffceaf0),
-                PetPage(id: g.id),
-              ),
-            ],
-          ),
-          SectionLabel(context.l.myGrowth),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: PaperCard(
-                  onTap: () => openPage(context, EvolutionPage(id: g.id)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.auto_awesome_outlined),
-                      const SizedBox(height: 10),
-                      Text(
-                        context.l.evolution,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        context.l.experienced,
-                        style: const TextStyle(fontSize: 11, color: muted),
-                      ),
-                    ],
+          if (g == null) const PlantBindingPrompt(showManagement: true),
+          if (g != null) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                tile(
+                  context.l.plants,
+                  g.name,
+                  'tuantuan',
+                  const Color(0xffd5f2da),
+                  const PlantsPage(),
+                ),
+                const SizedBox(width: 10),
+                tile(
+                  context.l.pet,
+                  '${g.pet.name} · Lv.${g.pet.level}',
+                  g.pet.formId,
+                  const Color(0xfffceaf0),
+                  PetPage(id: g.id),
+                ),
+              ],
+            ),
+            SectionLabel(context.l.myGrowth),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: PaperCard(
+                    onTap: () => openPage(context, EvolutionPage(id: g.id)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.auto_awesome_outlined),
+                        const SizedBox(height: 10),
+                        Text(
+                          context.l.evolution,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          context.l.experienced,
+                          style: const TextStyle(fontSize: 11, color: muted),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: PaperCard(
-                  onTap: () => openPage(context, DiaryPage(id: g.id)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.menu_book_outlined),
-                      const SizedBox(height: 10),
-                      Text(
-                        context.l.diary,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        context.l.actions,
-                        style: const TextStyle(fontSize: 11, color: muted),
-                      ),
-                    ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: PaperCard(
+                    onTap: () => openPage(context, DiaryPage(id: g.id)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.menu_book_outlined),
+                        const SizedBox(height: 10),
+                        Text(
+                          context.l.diary,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          context.l.actions,
+                          style: const TextStyle(fontSize: 11, color: muted),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           SectionLabel(context.l.mySpace),
           PaperCard(
             padding: EdgeInsets.zero,
@@ -221,6 +224,30 @@ class MinePage extends StatelessWidget {
       ),
     );
   }
+}
+
+class PlantBindingPrompt extends StatelessWidget {
+  const PlantBindingPrompt({super.key, this.showManagement = false});
+  final bool showManagement;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(context.l.emptyPlants, textAlign: TextAlign.center),
+      const SizedBox(height: 16),
+      FilledButton(
+        onPressed: () => openPage(context, const AddPlantPage()),
+        child: Text(context.l.addPlant),
+      ),
+      if (showManagement && AppScope.of(context).data.gardens.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: () => openPage(context, const PlantsPage()),
+          child: Text(context.l.plants),
+        ),
+      ],
+    ],
+  );
 }
 
 class PlantsPage extends StatelessWidget {
@@ -849,7 +876,9 @@ class _MonitorPageState extends State<MonitorPage> {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            '${g.latestReading.values[i].toStringAsFixed(i == 0 ? 0 : 1)} ${units[i]}',
+                            g.readings.isEmpty
+                                ? context.l.noRecords
+                                : '${g.latestReading.values[i].toStringAsFixed(i == 0 ? 0 : 1)} ${units[i]}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

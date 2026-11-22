@@ -7,7 +7,7 @@ import 'package:plant/domain/behavior.dart';
 
 void main() {
   final now = DateTime(2026, 11, 22, 12);
-  Garden garden() => newGarden('test', '绿萝', '团子', now, 0);
+  Garden garden() => newGarden('test', '绿萝', '团子', now);
   const e = EnvironmentFit(.8, .7, .6, .5, change: .4);
   test('使用新版公式计算白天行为评分', () {
     final g = garden();

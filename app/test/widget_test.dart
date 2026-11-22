@@ -19,7 +19,7 @@ Future<void> render(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  store ??= await AppStore.load(MemoryStorage());
+  store ??= await seededStore(MemoryStorage());
   await store.language('zh');
   await tester.pumpWidget(PlantMateApp(store: store, runClock: false));
   await tester.pump();
@@ -61,7 +61,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   testWidgets('切换植物更新对应宠物，重建后保留选择', (tester) async {
-    final storage = MemoryStorage(), store = await AppStore.load(storage);
+    final storage = MemoryStorage(), store = await seededStore(storage);
     await render(tester, store: store);
     await tester.tap(find.byKey(const ValueKey('plant-selector')));
     await step(tester);
@@ -90,7 +90,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   testWidgets('发布校验必填项并把动态保存到模拟社区', (tester) async {
-    final store = await AppStore.load(MemoryStorage());
+    final store = await seededStore(MemoryStorage());
     await render(tester, store: store);
     await tester.tap(find.byKey(const ValueKey('nav-1')));
     await step(tester);

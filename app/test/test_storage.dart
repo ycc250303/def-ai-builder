@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'legacy_data.dart';
+
 import 'package:plant/data/app_store.dart';
 
 class MemoryStorage implements LocalStorage {
@@ -12,4 +16,11 @@ class MemoryStorage implements LocalStorage {
     }
     this.value = value;
   }
+}
+
+Future<AppStore> seededStore(LocalStorage storage, {DateTime? now}) {
+  final fixture = legacyData(now ?? DateTime.now());
+  return storage
+      .write(jsonEncode(fixture.toJson()))
+      .then((_) => AppStore.load(storage, now: now));
 }

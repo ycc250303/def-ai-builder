@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../data/models.dart';
 import 'common.dart';
 import 'garden_scene.dart';
+import 'mine_pages.dart';
 
 class SocialPage extends StatefulWidget {
   const SocialPage({super.key});
@@ -738,6 +739,12 @@ class _PublishPageState extends State<PublishPage> {
   @override
   Widget build(BuildContext context) {
     final store = AppScope.of(context), d = store.data;
+    if (widget.postId == null && d.activeGardens.isEmpty) {
+      return PageFrame(
+        title: context.l.publish,
+        child: const PlantBindingPrompt(showManagement: true),
+      );
+    }
     if (!ready) {
       ready = true;
       gardenId = d.selectedId;
@@ -763,7 +770,7 @@ class _PublishPageState extends State<PublishPage> {
                 initialValue: gardenId,
                 isExpanded: true,
                 decoration: InputDecoration(labelText: context.l.garden),
-                items: d.gardens
+                items: d.activeGardens
                     .map(
                       (g) => DropdownMenuItem(value: g.id, child: Text(g.name)),
                     )

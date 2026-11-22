@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../data/models.dart';
 import 'common.dart';
 import 'garden_scene.dart';
+import 'mine_pages.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({
@@ -14,7 +15,23 @@ class HomePage extends StatelessWidget {
   final ValueChanged<bool> onFullGarden;
   @override
   Widget build(BuildContext context) {
-    final store = AppScope.of(context), g = store.data.selected;
+    final store = AppScope.of(context), g = store.data.selectedGarden;
+    if (g == null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              context.l.garden,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 48),
+            const PlantBindingPrompt(showManagement: true),
+          ],
+        ),
+      );
+    }
     final header = Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
       child: Row(
@@ -143,15 +160,6 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             header,
-            if (g.archived)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: FilledButton(
-                  onPressed: () =>
-                      openPage(context, const _PlantBindingEntry()),
-                  child: Text(context.l.emptyPlants),
-                ),
-              ),
             SizedBox(
               height: (box.maxHeight * .57).clamp(290.0, 510.0),
               child: GestureDetector(
@@ -223,32 +231,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-}
-
-// 空植物状态仍可以从已有植物管理入口开始绑定。
-class _PlantBindingEntry extends StatelessWidget {
-  const _PlantBindingEntry();
-  @override
-  Widget build(BuildContext context) => PageFrame(
-    title: context.l.plants,
-    child: Column(
-      children: [
-        Text(context.l.archiveNote),
-        const SizedBox(height: 12),
-        for (final g in AppScope.of(context).data.gardens)
-          ListTile(
-            title: Text(g.name),
-            trailing: TextButton(
-              onPressed: () async {
-                await AppScope.of(context).restorePlant(g.id);
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: Text(context.l.restore),
-            ),
-          ),
-      ],
-    ),
-  );
 }
 
 Future<void> selectPlant(BuildContext context) async {

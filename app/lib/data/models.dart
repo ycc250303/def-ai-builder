@@ -39,7 +39,7 @@ class Pet {
     this.cleanliness = 65,
     this.mood = 50,
     this.energy = 73,
-    this.xp = 12,
+    this.xp = 0,
     this.trait = 0,
     this.counts = const {},
     this.history = const [],
@@ -563,7 +563,7 @@ class AppData {
     required this.users,
     required this.posts,
     this.nickname = '小叶同学',
-    this.bio = '养一片绿意，等一个小小的惊喜。',
+    this.bio = '',
     this.following = const {},
     this.followers = const {},
     this.notifications = true,
@@ -575,13 +575,18 @@ class AppData {
   final List<Garden> gardens;
   final List<CommunityUser> users;
   final List<Post> posts;
-  String selectedId, nickname, bio, language, avatar;
+  String? selectedId;
+  String nickname, bio, language, avatar;
   Set<String> following, followers;
   bool notifications;
   List<VisitRequest> requests;
   List<SocialNotice> notices;
   List<Garden> get activeGardens => gardens.where((g) => !g.archived).toList();
-  Garden get selected => gardens.singleWhere((x) => x.id == selectedId);
+  Garden? get selectedGarden => selectedId == null
+      ? null
+      : gardens.singleWhere((g) => g.id == selectedId);
+  Garden get selected =>
+      selectedGarden ?? (throw StateError('No selected plant'));
   CommunityUser user(String id) => id == 'me'
       ? CommunityUser(
           id: 'me',
@@ -593,7 +598,7 @@ class AppData {
         )
       : users.singleWhere((x) => x.id == id);
   Map<String, dynamic> toJson() => {
-    'version': 2,
+    'version': 3,
     'gardens': gardens.map((x) => x.toJson()).toList(),
     'selectedId': selectedId,
     'users': users.map((x) => x.toJson()).toList(),
@@ -609,15 +614,16 @@ class AppData {
     'notices': notices.map((x) => x.toJson()).toList(),
   };
   factory AppData.fromJson(Map<String, dynamic> source) {
-    final j = source['version'] == 1 ? _migrateV1(source) : source;
-    if (j['version'] != 2) {
+    var j = source['version'] == 1 ? _migrateV1(source) : source;
+    if (j['version'] == 2) j = _migrateV2(j);
+    if (j['version'] != 3) {
       throw const FormatException('Unsupported local data version');
     }
     final d = AppData(
       gardens: (j['gardens'] as List)
           .map((x) => Garden.fromJson(x as Map<String, dynamic>))
           .toList(),
-      selectedId: j['selectedId'] as String,
+      selectedId: j['selectedId'] as String?,
       users: (j['users'] as List)
           .map((x) => CommunityUser.fromJson(x as Map<String, dynamic>))
           .toList(),
@@ -638,7 +644,13 @@ class AppData {
           .map((x) => SocialNotice.fromJson(x as Map<String, dynamic>))
           .toList(),
     );
-    d.selected;
+    if (d.selectedId == null) {
+      if (d.activeGardens.isNotEmpty) {
+        throw const FormatException('Active plants require a selection');
+      }
+    } else if (d.selected.archived) {
+      throw const FormatException('Selected plant must be active');
+    }
     if (d.gardens.map((g) => g.id).toSet().length != d.gardens.length) {
       throw const FormatException('Duplicate garden ID');
     }
@@ -714,5 +726,35 @@ Map<String, dynamic> _migrateV1(Map<String, dynamic> source) {
     'requests': <dynamic>[],
     'notices': <dynamic>[],
   });
+  return j;
+}
+
+/// 清理旧版预置植物，保留用户创建的植物、个人资料与社区操作。
+Map<String, dynamic> _migrateV2(Map<String, dynamic> source) {
+  final j = jsonDecode(jsonEncode(source)) as Map<String, dynamic>;
+  final gardens = j['gardens'] as List;
+  final selectedId = j['selectedId'] as String;
+  if (gardens.where((g) => g['id'] == selectedId).length != 1 ||
+      gardens.map((g) => g['id']).toSet().length != gardens.length) {
+    throw const FormatException('Invalid garden selection or duplicate ID');
+  }
+  gardens.removeWhere((g) => ['g1', 'g2'].contains(g['id']));
+  final active = gardens.where((g) => g['archived'] == false).toList();
+  if (!active.any((g) => g['id'] == j['selectedId'])) {
+    j['selectedId'] = active.isEmpty ? null : active.first['id'];
+  }
+  final removedRequests = <String>{};
+  (j['requests'] as List).removeWhere((r) {
+    final remove = r['ownerId'] == 'me' && ['g1', 'g2'].contains(r['gardenId']);
+    if (remove) removedRequests.add(r['id'] as String);
+    return remove;
+  });
+  (j['notices'] as List).removeWhere(
+    (n) =>
+        ['notice-like', 'notice-follow'].contains(n['id']) ||
+        removedRequests.contains(n['targetId']),
+  );
+  if (j['bio'] == '养一片绿意，等一个小小的惊喜。') j['bio'] = '';
+  j['version'] = 3;
   return j;
 }

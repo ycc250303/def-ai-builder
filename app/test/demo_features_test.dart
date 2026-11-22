@@ -8,10 +8,11 @@ import 'package:plant/data/models.dart';
 import 'package:plant/domain/behavior.dart';
 
 import 'test_storage.dart';
+import 'legacy_data.dart';
 
 void main() {
   final now = DateTime(2026, 11, 22, 10);
-  Future<AppStore> create() => AppStore.load(MemoryStorage(), now: now);
+  Future<AppStore> create() => seededStore(MemoryStorage(), now: now);
   test('六种访问权限按关注方向分别判断', () async {
     final store = await create();
     for (final mode in VisitMode.values) {
@@ -38,7 +39,7 @@ void main() {
   });
   test('申请去重、审批、拒绝后重新申请及重新加载均保持访问规则', () async {
     final storage = MemoryStorage(),
-        store = await AppStore.load(storage, now: now);
+        store = await seededStore(storage, now: now);
     await store.setVisitMode('g1', VisitMode.request);
     await store.simulateIncomingRequest('g1');
     await store.simulateIncomingRequest('g1');
@@ -124,7 +125,7 @@ void main() {
   });
   test('场景移动替换收起与恢复保存到对应植物且快照独立', () async {
     final storage = MemoryStorage(),
-        store = await AppStore.load(storage, now: now);
+        store = await seededStore(storage, now: now);
     final item = SceneItem(
       id: 'decor',
       asset: 'decorations/exploration_mushroom.png',
@@ -157,7 +158,7 @@ void main() {
     expect(store.garden('g1').items, isEmpty);
   });
   test('等级4至5固定进化，9至10随机一次，成熟后升级不改变形象', () {
-    final g = newGarden('test', '植物', '宠物', now, 0);
+    final g = newGarden('test', '植物', '宠物', now);
     g.pet.xp = 398;
     BehaviorRules.apply(
       g,
@@ -194,7 +195,7 @@ void main() {
     expect(restored.events.where((e) => e.kind == '升级'), hasLength(3));
   });
   test('普通升级保留形态且记录等级事件', () {
-    final g = newGarden('test', '植物', '宠物', now, 0);
+    final g = newGarden('test', '植物', '宠物', now);
     g.pet.xp = 98;
     BehaviorRules.apply(
       g,
@@ -209,7 +210,7 @@ void main() {
   });
   test('纯文字发布、帖子编辑删除及评论回复删除均保存且不改变宠物', () async {
     final storage = MemoryStorage(),
-        store = await AppStore.load(storage, now: now);
+        store = await seededStore(storage, now: now);
     final pet = jsonEncode(store.garden('g1').pet.toJson());
     await store.publish('g1', '文字', '', '纯文字动态', withImage: false);
     final id = store.data.posts.first.id;
@@ -255,7 +256,7 @@ void main() {
   });
   test('语言和头像保存后恢复', () async {
     final storage = MemoryStorage(),
-        store = await AppStore.load(storage, now: now);
+        store = await seededStore(storage, now: now);
     await store.language('en');
     await store.profile('名字', '简介', avatar: 'fixed');
     final d = (await AppStore.load(storage, now: now)).data;
@@ -264,7 +265,9 @@ void main() {
     expect(d.nickname, '名字');
   });
   test('已知旧版本数据显式迁移，保留昵称与经验并持久化新版本', () async {
-    final j = mockData(now).toJson();
+    final j = legacyData(now).toJson();
+    j['gardens'][1]['id'] = 'garden-user';
+    j['selectedId'] = 'garden-user';
     j['version'] = 1;
     for (final key in [
       'language',
@@ -305,10 +308,10 @@ void main() {
     }
     final storage = MemoryStorage()..value = jsonEncode(j);
     final store = await AppStore.load(storage, now: now);
-    expect(store.garden('g2').pet.xp, 412);
-    expect(store.garden('g2').pet.formId, 'fixed');
+    expect(store.garden('garden-user').pet.xp, 412);
+    expect(store.garden('garden-user').pet.formId, 'fixed');
     expect(store.data.posts.first.comments.single.text, '旧评论');
-    expect(jsonDecode(storage.value!)['version'], 2);
+    expect(jsonDecode(storage.value!)['version'], 3);
   });
   test('未知版本不会覆盖本机数据', () async {
     final storage = MemoryStorage()..value = '{"version":99}';

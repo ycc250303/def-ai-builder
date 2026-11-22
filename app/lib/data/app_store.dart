@@ -35,11 +35,11 @@ class AppStore extends ChangeNotifier {
   static Future<AppStore> load(LocalStorage storage, {DateTime? now}) async {
     final saved = await storage.read();
     final data = saved == null
-        ? mockData(now ?? DateTime.now())
+        ? initialData(now ?? DateTime.now())
         : AppData.fromJson(jsonDecode(saved) as Map<String, dynamic>);
     final store = AppStore._(storage, data);
     if (saved == null ||
-        (jsonDecode(saved) as Map<String, dynamic>)['version'] == 1) {
+        (jsonDecode(saved) as Map<String, dynamic>)['version'] != 3) {
       await storage.write(jsonEncode(data.toJson()));
     }
     return store;
@@ -59,7 +59,8 @@ class AppStore extends ChangeNotifier {
 
   Garden garden(String id) => data.gardens.singleWhere((g) => g.id == id);
   Future<void> select(String id) => change((d) {
-    d.gardens.singleWhere((g) => g.id == id);
+    final g = d.gardens.singleWhere((g) => g.id == id);
+    if (g.archived) throw StateError('Plant must be bound before selection');
     d.selectedId = id;
   });
   Future<void> addPlant(String name, String petName) => change((d) {
@@ -68,7 +69,6 @@ class AppStore extends ChangeNotifier {
       name.trim(),
       petName.trim(),
       DateTime.now(),
-      d.gardens.length,
     );
     if (g.name.isEmpty || g.pet.name.isEmpty) {
       throw ArgumentError('植物和宠物昵称不能为空');
@@ -163,7 +163,7 @@ class AppStore extends ChangeNotifier {
     if (g.deviceId == null) {
       throw StateError('请先绑定模拟设备');
     }
-    g.readings.add(mockReadings(DateTime.now(), g.pet.trait).last);
+    g.readings.add(mockReading(DateTime.now(), g.pet.trait));
   });
 
   Future<void> language(String value) => change((d) {
@@ -203,11 +203,17 @@ class AppStore extends ChangeNotifier {
     g.deviceId = null;
     g.visitMode = VisitMode.closed;
     g.action = null;
-    if (d.activeGardens.isNotEmpty) d.selectedId = d.activeGardens.first.id;
+    if (d.selectedId == id) {
+      d.selectedId = d.activeGardens.isEmpty ? null : d.activeGardens.first.id;
+    }
   });
   Future<void> restorePlant(String id) => change((d) {
     final g = d.gardens.singleWhere((g) => g.id == id);
     g.archived = false;
+    g.updatedAt = DateTime.now();
+    g.lastDecision = g.updatedAt;
+    g.actionStartedAt = null;
+    g.actionEndsAt = null;
     d.selectedId = id;
   });
   Future<void> renamePlant(String id, String value) => change((d) {
@@ -368,7 +374,7 @@ class AppStore extends ChangeNotifier {
           continue;
         }
         g.lastDecision = now;
-        g.readings.add(mockReadings(now, g.pet.trait).last);
+        g.readings.add(mockReading(now, g.pet.trait));
         final day = now.hour >= 7 && now.hour < 20;
         // 明确的模拟适宜度；正式硬件接入后由校准后的数据提供方替换。
         final e = EnvironmentFit(

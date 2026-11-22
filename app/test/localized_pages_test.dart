@@ -24,7 +24,7 @@ Future<AppStore> render(
   t.view.devicePixelRatio = 1;
   addTearDown(t.view.resetPhysicalSize);
   addTearDown(t.view.resetDevicePixelRatio);
-  final store = await AppStore.load(MemoryStorage());
+  final store = await seededStore(MemoryStorage());
   await store.language(locale);
   await t.pumpWidget(PlantMateApp(store: store, runClock: false));
   await step(t);
